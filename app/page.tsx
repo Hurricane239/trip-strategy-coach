@@ -274,12 +274,14 @@ function Field({
   onChange,
   hint,
   placeholder,
+  blankWhenZero = false,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
   hint?: string;
   placeholder?: string;
+  blankWhenZero?: boolean;
 }) {
   return (
     <label className="block min-w-0">
@@ -290,7 +292,7 @@ function Field({
         type="number"
         min="0"
         placeholder={placeholder}
-        value={value}
+        value={blankWhenZero && value === 0 ? "" : value}
         onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
         className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
       />
@@ -308,12 +310,12 @@ function Status({ ok, okLabel = "On Target", badLabel = "Needs Attention" }: { o
 }
 
 export default function Home() {
-  const [currentBpp, setCurrentBpp] = useState(850000);
-  const [rank, setRank] = useState(148);
-  const [winningLine, setWinningLine] = useState(957931.31);
+  const [currentBpp, setCurrentBpp] = useState(0);
+  const [rank, setRank] = useState(0);
+  const [winningLine, setWinningLine] = useState(0);
   const [safetyMargin, setSafetyMargin] = useState(100000);
   const [coachName, setCoachName] = useState("");
-  const [competitionCashFlow, setCompetitionCashFlow] = useState(6500);
+  const [competitionCashFlow, setCompetitionCashFlow] = useState(0);
   const [competitionPremium, setCompetitionPremium] = useState(0);
   const [extraCashFlowMinimum, setExtraCashFlowMinimum] = useState(0);
   const [strategyMode, setStrategyMode] = useState<"recommended" | "coach">("recommended");
@@ -362,10 +364,10 @@ export default function Home() {
     useState<CompetitionTrack>("original");
   const [competitionCategory, setCompetitionCategory] =
     useState<CompetitionCategory>("us_future_rvp");
-  const [monthlyRecruits, setMonthlyRecruits] = useState(3);
-  const [directRecruits, setDirectRecruits] = useState(1);
-  const [monthlyPremium, setMonthlyPremium] = useState(3500);
-  const [personalPremium, setPersonalPremium] = useState(1000);
+  const [monthlyRecruits, setMonthlyRecruits] = useState(0);
+  const [directRecruits, setDirectRecruits] = useState(0);
+  const [monthlyPremium, setMonthlyPremium] = useState(0);
+  const [personalPremium, setPersonalPremium] = useState(0);
 
   const [strategy, setStrategy] = useState<Strategy>({
     recruits: 0,
@@ -2294,11 +2296,15 @@ export default function Home() {
 
               <Field
                 label="Current Month Recruits"
+                placeholder="e.g. 3"
+                blankWhenZero
                 value={monthlyRecruits}
                 onChange={setMonthlyRecruits}
               />
               <Field
                 label="Current Month Premium"
+                placeholder="e.g. 3500"
+                blankWhenZero
                 value={monthlyPremium}
                 onChange={setMonthlyPremium}
               />
@@ -2309,9 +2315,16 @@ export default function Home() {
                 Additional activity inputs
               </summary>
               <div className="grid min-w-0 grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
-                <Field label="Direct Recruits" placeholder="e.g. 1"
-                    value={directRecruits} onChange={setDirectRecruits} />
-                <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} />
+                <Field
+  label="Direct Recruits"
+  placeholder="e.g. 1"
+  blankWhenZero
+  value={directRecruits}
+  onChange={setDirectRecruits}
+/>
+                <Field label="Personal Premium"
+                placeholder="e.g. 1000"
+                blankWhenZero value={personalPremium} onChange={setPersonalPremium} />
                 <label className="block min-w-0">
                   <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Competition Track
@@ -2369,6 +2382,8 @@ export default function Home() {
                   <div className="col-span-2">
                     <Field
                       label="Competition Cash Flow"
+                      placeholder="e.g. 6500"
+                      blankWhenZero
                       value={competitionCashFlow}
                       onChange={setCompetitionCashFlow}
                     />
@@ -2540,10 +2555,16 @@ export default function Home() {
                 Edit position
               </summary>
               <div className="grid grid-cols-2 gap-2.5 px-4 pb-4">
-                <Field label="Current BPP" value={currentBpp} onChange={setCurrentBpp} />
-                <Field label="Current Rank" value={rank} onChange={setRank} />
+                <Field label="Current BPP"
+                placeholder="e.g. 850000"
+                blankWhenZero value={currentBpp} onChange={setCurrentBpp} />
+                <Field label="Current Rank"
+                placeholder="e.g. 148"
+                blankWhenZero value={rank} onChange={setRank} />
                 <div className="col-span-2">
-                  <Field label="Current Winning Line" value={winningLine} onChange={setWinningLine} />
+                  <Field label="Current Winning Line"
+                placeholder="e.g. 957931.31"
+                blankWhenZero value={winningLine} onChange={setWinningLine} />
                 </div>
               </div>
             </details>
@@ -2672,10 +2693,18 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <Field label="Current Month Recruits" value={monthlyRecruits} onChange={setMonthlyRecruits} hint="Base-shop recruiting activity used for the level target." />
-            <Field label="Direct Recruits" value={directRecruits} onChange={setDirectRecruits} hint={belowRvp ? "Personal requirement: at least 1 direct recruit." : "Tracked for coaching."} />
-            <Field label="Current Month Premium" value={monthlyPremium} onChange={setMonthlyPremium} hint="Premium used toward the level target." />
-            <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} hint={belowRvp ? "Personal requirement: at least $1,000." : "Tracked for coaching."} />
+            <Field label="Current Month Recruits"
+                placeholder="e.g. 3"
+                blankWhenZero value={monthlyRecruits} onChange={setMonthlyRecruits} hint="Base-shop recruiting activity used for the level target." />
+            <Field label="Direct Recruits"
+                placeholder="e.g. 1"
+                blankWhenZero value={directRecruits} onChange={setDirectRecruits} hint={belowRvp ? "Personal requirement: at least 1 direct recruit." : "Tracked for coaching."} />
+            <Field label="Current Month Premium"
+                placeholder="e.g. 3500"
+                blankWhenZero value={monthlyPremium} onChange={setMonthlyPremium} hint="Premium used toward the level target." />
+            <Field label="Personal Premium"
+                placeholder="e.g. 1000"
+                blankWhenZero value={personalPremium} onChange={setPersonalPremium} hint={belowRvp ? "Personal requirement: at least $1,000." : "Tracked for coaching."} />
           </div>
         </section>
 
@@ -2717,9 +2746,15 @@ export default function Home() {
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <Field label="Current BPP" value={currentBpp} onChange={setCurrentBpp} />
-              <Field label="Current Rank" value={rank} onChange={setRank} />
-              <Field label="Current Winning Line" value={winningLine} onChange={setWinningLine} hint="Update this when you take a new scoreboard snapshot." />
+              <Field label="Current BPP"
+                placeholder="e.g. 850000"
+                blankWhenZero value={currentBpp} onChange={setCurrentBpp} />
+              <Field label="Current Rank"
+                placeholder="e.g. 148"
+                blankWhenZero value={rank} onChange={setRank} />
+              <Field label="Current Winning Line"
+                placeholder="e.g. 957931.31"
+                blankWhenZero value={winningLine} onChange={setWinningLine} hint="Update this when you take a new scoreboard snapshot." />
             </div>
           </div>
 
@@ -2842,6 +2877,8 @@ export default function Home() {
                   <div className="mt-4">
                     <Field
                       label="Current Competition Cash Flow"
+                    placeholder="e.g. 6500"
+                    blankWhenZero
                       value={competitionCashFlow}
                       onChange={setCompetitionCashFlow}
                       hint={
