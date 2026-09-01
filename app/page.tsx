@@ -112,7 +112,8 @@ type OriginalCompetitionCategory =
   | "cash_flow"
   | "new_rvp"
   | "us_future_rvp"
-  | "us_future_regional_leader";
+  | "us_future_regional_leader"
+  | "us_life_licensed_after_june_5";
 
 type ExtraCompetitionCategory =
   | "rvp_above"
@@ -164,6 +165,11 @@ const ORIGINAL_CATEGORIES: Record<
     winningSlots: 115,
     slotsLabel: "115 U.S. Slots",
   },
+  us_life_licensed_after_june_5: {
+    label: "U.S. Life Licensed After June 5, 2026",
+    winningSlots: 10,
+    slotsLabel: "10 U.S. Winners",
+  },
 };
 
 const EXTRA_SLOT_CATEGORIES: Record<
@@ -186,9 +192,9 @@ const EXTRA_SLOT_CATEGORIES: Record<
     slotsLabel: "90 Extra U.S. Slots",
   },
   us_newly_life_licensed: {
-    label: "U.S. Newly Life Licensed",
+    label: "U.S. Life Licensed Aug 3–Nov 2026",
     winningSlots: 5,
-    slotsLabel: "5 Extra U.S. Slots",
+    slotsLabel: "5 U.S. Winners",
   },
 };
 
@@ -305,6 +311,7 @@ export default function Home() {
   const [safetyMargin, setSafetyMargin] = useState(100000);
   const [coachName, setCoachName] = useState("");
   const [competitionCashFlow, setCompetitionCashFlow] = useState(6500);
+  const [competitionPremium, setCompetitionPremium] = useState(0);
   const [extraCashFlowMinimum, setExtraCashFlowMinimum] = useState(0);
   const [strategyMode, setStrategyMode] = useState<"recommended" | "coach">("recommended");
   const [strategyName, setStrategyName] = useState("Coach's Custom Strategy");
@@ -840,6 +847,28 @@ export default function Home() {
     (competitionTrack === "original"
       ? originalCategoryRules.us_future_regional_leader
       : extraCategoryRules.us_future_regional_leader);
+
+  const isOriginalLifeLicensedCategory =
+    competitionTrack === "original" &&
+    competitionCategory === "us_life_licensed_after_june_5";
+  const isExtraLifeLicensedCategory =
+    competitionTrack === "extra_slots" &&
+    competitionCategory === "us_newly_life_licensed";
+  const usesCompetitionPremiumMinimum =
+    isOriginalLifeLicensedCategory || isExtraLifeLicensedCategory;
+  const competitionPremiumMinimum = isOriginalLifeLicensedCategory
+    ? 7000
+    : isExtraLifeLicensedCategory
+      ? 4000
+      : 0;
+  const competitionPremiumNeed = Math.max(
+    0,
+    competitionPremiumMinimum - competitionPremium,
+  );
+  const competitionPremiumOnTarget =
+    usesCompetitionPremiumMinimum &&
+    competitionPremium >= competitionPremiumMinimum;
+
   const belowRvp = leadershipLevel !== "rvp";
   const personalDirectNeed = belowRvp ? Math.max(0, 1 - directRecruits) : 0;
   const personalPremiumNeed = belowRvp ? Math.max(0, 1000 - personalPremium) : 0;
@@ -888,12 +917,14 @@ export default function Home() {
     competitionTrack === "original"
       ? originalCashFlowMinimum
       : extraCashFlowMinimum;
-  const cashFlowMinimumSet = competitionCashFlowMinimum > 0;
+  const cashFlowMinimumSet =
+    !usesCompetitionPremiumMinimum && competitionCashFlowMinimum > 0;
   const competitionCashFlowNeed = Math.max(
     0,
     competitionCashFlowMinimum - competitionCashFlow,
   );
   const cashFlowOnTarget =
+    !usesCompetitionPremiumMinimum &&
     cashFlowMinimumSet &&
     competitionCashFlow >= competitionCashFlowMinimum;
 
@@ -933,13 +964,15 @@ export default function Home() {
     );
   }
 
-  if (cashFlowMinimumSet && !cashFlowOnTarget) {
+  if (usesCompetitionPremiumMinimum && !competitionPremiumOnTarget) {
+    printShortfalls.push(
+      `Competition premium: still need $${whole.format(competitionPremiumNeed)} to reach the $${whole.format(competitionPremiumMinimum)} minimum for ${selectedCategory.label}.`,
+    );
+  } else if (cashFlowMinimumSet && !cashFlowOnTarget) {
     printShortfalls.push(
       `Competition cash flow: still need $${whole.format(competitionCashFlowNeed)} to reach the full-period minimum.`,
     );
-  }
-
-  if (!cashFlowMinimumSet) {
+  } else if (!usesCompetitionPremiumMinimum && !cashFlowMinimumSet) {
     printShortfalls.push(
       "Competition cash-flow minimum has not been entered for this track yet.",
     );
@@ -2275,12 +2308,7 @@ export default function Home() {
               <div className="grid min-w-0 grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
                 <Field label="Direct Recruits" value={directRecruits} onChange={setDirectRecruits} />
                 <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} />
-                <Field
-                  label="Competition Cash Flow"
-                  value={competitionCashFlow}
-                  onChange={setCompetitionCashFlow}
-                />
-                <label className="block">
+                <label className="block min-w-0">
                   <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Competition Track
                   </span>
@@ -2302,6 +2330,46 @@ export default function Home() {
                     ))}
                   </select>
                 </label>
+
+                <label className="block min-w-0">
+                  <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Competition Category
+                  </span>
+                  <select
+                    value={competitionCategory}
+                    onChange={(event) =>
+                      setCompetitionCategory(
+                        event.target.value as CompetitionCategory,
+                      )
+                    }
+                    className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-xs font-semibold text-slate-900 outline-none"
+                  >
+                    {Object.entries(availableCategories).map(([value, rule]) => (
+                      <option key={value} value={value}>
+                        {rule.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {usesCompetitionPremiumMinimum ? (
+                  <div className="col-span-2">
+                    <Field
+                      label="Current Competition Premium"
+                      value={competitionPremium}
+                      onChange={setCompetitionPremium}
+                      hint={`Minimum for this category: $${whole.format(competitionPremiumMinimum)}. No cash-flow minimum applies.`}
+                    />
+                  </div>
+                ) : (
+                  <div className="col-span-2">
+                    <Field
+                      label="Competition Cash Flow"
+                      value={competitionCashFlow}
+                      onChange={setCompetitionCashFlow}
+                    />
+                  </div>
+                )}
               </div>
             </details>
           </section>
@@ -2356,9 +2424,25 @@ export default function Home() {
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3 py-3 text-xs">
-                <span className="font-semibold text-slate-700">Competition Minimum</span>
-                <span className="font-bold text-[#17393a]">
-                  ${whole.format(competitionCashFlow)} / ${whole.format(competitionCashFlowMinimum)}
+                <span className="font-semibold text-slate-700">
+                  {usesCompetitionPremiumMinimum
+                    ? "Competition Premium Minimum"
+                    : "Competition Cash Flow Minimum"}
+                </span>
+                <span
+                  className={`font-bold ${
+                    usesCompetitionPremiumMinimum
+                      ? competitionPremiumOnTarget
+                        ? "text-emerald-700"
+                        : "text-[#b18745]"
+                      : cashFlowOnTarget
+                        ? "text-emerald-700"
+                        : "text-[#17393a]"
+                  }`}
+                >
+                  {usesCompetitionPremiumMinimum
+                    ? `$${whole.format(competitionPremium)} / $${whole.format(competitionPremiumMinimum)}`
+                    : `$${whole.format(competitionCashFlow)} / $${whole.format(competitionCashFlowMinimum)}`}
                 </span>
               </div>
             </div>
@@ -2578,7 +2662,7 @@ export default function Home() {
                 ))}
               </select>
               <span className="mt-1.5 block text-xs leading-5 text-slate-400">
-                U.S.-based categories only in this version.
+                U.S.-based categories only. Life-licensed categories use a premium minimum instead of cash flow.
               </span>
             </label>
           </div>
@@ -2689,51 +2773,84 @@ export default function Home() {
                 </div>
               ) : null}
 
-              <div className="rounded-2xl bg-white/10 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">Competition Cash Flow Minimum</p>
-                    <p className="mt-1 text-xs text-white/60">
-                      {competitionTrack === "original"
-                        ? `Full ${originalQualificationLabel} qualification period: $${whole.format(competitionCashFlowMinimum)}`
-                        : cashFlowMinimumSet
-                          ? `Full ${extraQualificationLabel} extra-slots period: $${whole.format(competitionCashFlowMinimum)}`
-                          : "Set the official August–November cash-flow minimum below."}
-                    </p>
-                  </div>
-                  <Status
-                    ok={cashFlowOnTarget}
-                    okLabel="Requirement Met"
-                    badLabel={cashFlowMinimumSet ? "Below Target" : "Set Minimum"}
-                  />
-                </div>
-
-                {competitionTrack === "extra_slots" ? (
-                  <div className="mt-4">
-                    <Field
-                      label="Extra Slots Cash Flow Minimum"
-                      value={extraCashFlowMinimum}
-                      onChange={setExtraCashFlowMinimum}
-                      hint="Enter the official total cash-flow minimum for the August–November extra-slots competition."
+              {usesCompetitionPremiumMinimum ? (
+                <div className="rounded-2xl bg-white/10 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Competition Premium Minimum
+                      </p>
+                      <p className="mt-1 text-xs text-white/60">
+                        {selectedCategory.label}: ${whole.format(competitionPremiumMinimum)} premium minimum. No cash-flow minimum applies.
+                      </p>
+                    </div>
+                    <Status
+                      ok={competitionPremiumOnTarget}
+                      okLabel="Requirement Met"
+                      badLabel="Below Target"
                     />
                   </div>
-                ) : null}
 
-                <div className="mt-4">
-                  <Field
-                    label="Current Competition Cash Flow"
-                    value={competitionCashFlow}
-                    onChange={setCompetitionCashFlow}
-                    hint={
-                      !cashFlowMinimumSet
-                        ? "Set the extra-slots cash-flow minimum first."
-                        : cashFlowOnTarget
-                          ? "Full competition-period cash flow requirement reached."
-                          : `Need $${whole.format(competitionCashFlowNeed)} more to reach the full competition minimum.`
-                    }
-                  />
+                  <div className="mt-4">
+                    <Field
+                      label="Current Competition Premium"
+                      value={competitionPremium}
+                      onChange={setCompetitionPremium}
+                      hint={
+                        competitionPremiumOnTarget
+                          ? "Competition premium minimum reached."
+                          : `Need $${whole.format(competitionPremiumNeed)} more premium to reach the category minimum.`
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-2xl bg-white/10 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold">Competition Cash Flow Minimum</p>
+                      <p className="mt-1 text-xs text-white/60">
+                        {competitionTrack === "original"
+                          ? `Full ${originalQualificationLabel} qualification period: $${whole.format(competitionCashFlowMinimum)}`
+                          : cashFlowMinimumSet
+                            ? `Full ${extraQualificationLabel} extra-slots period: $${whole.format(competitionCashFlowMinimum)}`
+                            : "Set the official August–November cash-flow minimum below."}
+                      </p>
+                    </div>
+                    <Status
+                      ok={cashFlowOnTarget}
+                      okLabel="Requirement Met"
+                      badLabel={cashFlowMinimumSet ? "Below Target" : "Set Minimum"}
+                    />
+                  </div>
+
+                  {competitionTrack === "extra_slots" ? (
+                    <div className="mt-4">
+                      <Field
+                        label="Extra Slots Cash Flow Minimum"
+                        value={extraCashFlowMinimum}
+                        onChange={setExtraCashFlowMinimum}
+                        hint="Enter the official total cash-flow minimum for the August–November extra-slots competition."
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4">
+                    <Field
+                      label="Current Competition Cash Flow"
+                      value={competitionCashFlow}
+                      onChange={setCompetitionCashFlow}
+                      hint={
+                        !cashFlowMinimumSet
+                          ? "Set the extra-slots cash-flow minimum first."
+                          : cashFlowOnTarget
+                            ? "Full competition-period cash flow requirement reached."
+                            : `Need $${whole.format(competitionCashFlowNeed)} more to reach the full competition minimum.`
+                      }
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">
@@ -2998,15 +3115,26 @@ export default function Home() {
                     </p>
                   </div>
                   <div className={`rounded-2xl p-5 ${projectedBpp >= coachingTarget ? "bg-emerald-50" : "bg-[#fff8e8]"}`}>
-                    <p className="text-xs font-semibold text-slate-500">Coaching Target</p>
+                    <p className="text-xs font-semibold text-slate-500">Recommended Safety Target</p>
+                    <p className="mt-1 text-sm font-bold text-[#17393a]">
+                      {whole.format(coachingTarget)} BPP
+                    </p>
                     <p className={`mt-2 text-lg font-bold ${projectedBpp >= coachingTarget ? "text-emerald-700" : "text-[#9a7639]"}`}>
-                      {projectedBpp >= coachingTarget ? `Above by ${whole.format(projectedBpp - coachingTarget)}` : `Need ${whole.format(projectedTargetGap)} more`}
+                      {projectedBpp >= coachingTarget
+                        ? `${whole.format(projectedBpp - coachingTarget)} above the 100K cushion`
+                        : `${whole.format(projectedTargetGap)} more for a 100K cushion`}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-2xl border border-[#d8c59c] bg-[#fffaf0] p-4 text-xs leading-5 text-[#785f32]">
-                  Coach Mode is a planning tool. Official competition credit, rankings, qualification status, and trip awards are determined by Primerica under the applicable rules.
+                  <p className="font-bold text-[#17393a]">Why aim higher?</p>
+                  <p className="mt-1">
+                    The winning line can move as other competitors add BPP. The Recommended Safety Target adds a 100,000 BPP cushion above today&apos;s winning line so you are not coaching someone to the line itself.
+                  </p>
+                  <p className="mt-2">
+                    This is a coaching recommendation only. Official competition credit, rankings, qualification status, and trip awards are determined by Primerica under the applicable rules.
+                  </p>
                 </div>
               </div>
             )}
@@ -3234,7 +3362,7 @@ export default function Home() {
                 <p className="mt-1 text-sm font-bold">{whole.format(winningLine)}</p>
               </div>
               <div>
-                <p className="text-[8px] uppercase tracking-[0.12em] text-white/50">Coaching Target</p>
+                <p className="text-[8px] uppercase tracking-[0.12em] text-white/50">Recommended Safety Target</p>
                 <p className="mt-1 text-sm font-bold">{whole.format(coachingTarget)}</p>
               </div>
             </div>
