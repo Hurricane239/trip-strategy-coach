@@ -365,15 +365,15 @@ export default function Home() {
   const [personalPremium, setPersonalPremium] = useState(1000);
 
   const [strategy, setStrategy] = useState<Strategy>({
-    recruits: 3,
+    recruits: 0,
     premium: 0,
     initialTrades: 0,
     securitiesProduction: 0,
     mortgageProduction: 0,
-    lifeLicenses: 1,
+    lifeLicenses: 0,
     securitiesLicenses: 0,
     mortgageLicenses: 0,
-    qualifies: 1,
+    qualifies: 0,
     playUps: 0,
   });
 
