@@ -273,11 +273,13 @@ function Field({
   value,
   onChange,
   hint,
+  placeholder,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
   hint?: string;
+  placeholder?: string;
 }) {
   return (
     <label className="block min-w-0">
@@ -287,6 +289,7 @@ function Field({
       <input
         type="number"
         min="0"
+        placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
         className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
@@ -2306,7 +2309,8 @@ export default function Home() {
                 Additional activity inputs
               </summary>
               <div className="grid min-w-0 grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
-                <Field label="Direct Recruits" value={directRecruits} onChange={setDirectRecruits} />
+                <Field label="Direct Recruits" placeholder="e.g. 1"
+                    value={directRecruits} onChange={setDirectRecruits} />
                 <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} />
                 <label className="block min-w-0">
                   <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
