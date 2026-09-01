@@ -1616,7 +1616,52 @@ export default function Home() {
       `}</style>
 
       <div className="screen-only">
-      <section className="border-b border-black/5 bg-[radial-gradient(circle_at_top_left,_rgba(80,190,200,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(215,178,101,0.25),_transparent_30%),linear-gradient(135deg,#f7f4ed_0%,#fffdf8_55%,#edf9f7_100%)]">
+      <section className="border-b border-black/5 bg-[#17393a] px-4 pb-4 pt-5 text-white md:hidden">
+        <div className="mx-auto max-w-md">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#e2c88e]">
+              Trip Strategy Coach
+            </p>
+            <button
+              type="button"
+              onClick={handleAdminButtonClick}
+              className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-white/90"
+            >
+              Admin
+            </button>
+          </div>
+
+          <div className="mt-4 rounded-[22px] bg-[#fffdf8] p-4 text-slate-900 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-[-0.03em] text-[#17393a]">
+                  {tripName}
+                </h1>
+                <p className="mt-0.5 text-lg font-medium text-[#b18745]">{tripSubtitle}</p>
+              </div>
+              <span className="rounded-full bg-[#f3ecd9] px-3 py-1.5 text-[11px] font-bold text-[#17393a]">
+                {selectedTrack.qualificationLabel}
+              </span>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 divide-x divide-slate-200 border-t border-slate-200 pt-3">
+              <div className="pr-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Category</p>
+                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedCategory.label}</p>
+              </div>
+              <div className="px-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Winning Slots</p>
+                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedCategory.slotsLabel}</p>
+              </div>
+              <div className="pl-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Track</p>
+                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedTrack.label}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="hidden border-b border-black/5 bg-[radial-gradient(circle_at_top_left,_rgba(80,190,200,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(215,178,101,0.25),_transparent_30%),linear-gradient(135deg,#f7f4ed_0%,#fffdf8_55%,#edf9f7_100%)] md:block">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -1646,7 +1691,7 @@ export default function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:px-8 lg:py-10">
-        <div className="flex flex-wrap justify-end gap-3">
+        <div className="hidden flex-wrap justify-end gap-3 md:flex">
           <button
             type="button"
             onClick={handleAdminButtonClick}
@@ -1668,7 +1713,7 @@ export default function Home() {
         </div>
 
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${
+          className={`hidden rounded-2xl border px-4 py-3 text-sm md:block ${
             databaseStatus === "connected"
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : databaseStatus === "error"
@@ -1776,7 +1821,17 @@ export default function Home() {
         ) : null}
 
         {showTripSetup && adminUnlocked ? (
-          <section className="rounded-[28px] border-2 border-[#d8c59c] bg-[#fffdf8] p-6 shadow-sm sm:p-8">
+          <section className="fixed inset-0 z-40 overflow-y-auto bg-[#fffdf8] p-4 shadow-2xl md:static md:inset-auto md:z-auto md:overflow-visible md:rounded-[28px] md:border-2 md:border-[#d8c59c] md:p-6 md:shadow-sm sm:md:p-8">
+            <div className="mb-4 flex items-center justify-between md:hidden">
+              <p className="text-sm font-bold text-[#17393a]">Trip Setup / Admin</p>
+              <button
+                type="button"
+                onClick={() => setShowTripSetup(false)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600"
+              >
+                Close
+              </button>
+            </div>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">
@@ -2132,6 +2187,287 @@ export default function Home() {
           </section>
         ) : null}
 
+        <div className="space-y-3 md:hidden">
+          <section className="rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-[#17393a]">Rep Snapshot</h2>
+              <span className="text-[10px] font-semibold text-slate-400">Key inputs</span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
+              <label className="block">
+                <span className="mb-1 block text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Teammate Name
+                </span>
+                <input
+                  value={coachName}
+                  onChange={(event) => setCoachName(event.target.value)}
+                  placeholder="Enter name"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1 block text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Leadership Level
+                </span>
+                <select
+                  value={leadershipLevel}
+                  onChange={(event) =>
+                    setLeadershipLevel(event.target.value as LeadershipLevel)
+                  }
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
+                >
+                  {Object.entries(LEVEL_RULES).map(([value, rule]) => (
+                    <option key={value} value={value}>
+                      {rule.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <Field
+                label="Current Month Recruits"
+                value={monthlyRecruits}
+                onChange={setMonthlyRecruits}
+              />
+              <Field
+                label="Current Month Premium"
+                value={monthlyPremium}
+                onChange={setMonthlyPremium}
+              />
+            </div>
+
+            <details className="mt-3 rounded-xl bg-slate-50">
+              <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-bold text-[#17393a]">
+                Additional activity inputs
+              </summary>
+              <div className="grid grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
+                <Field label="Direct Recruits" value={directRecruits} onChange={setDirectRecruits} />
+                <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} />
+                <Field
+                  label="Competition Cash Flow"
+                  value={competitionCashFlow}
+                  onChange={setCompetitionCashFlow}
+                />
+                <label className="block">
+                  <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Competition Track
+                  </span>
+                  <select
+                    value={competitionTrack}
+                    onChange={(event) =>
+                      setCompetitionTrack(event.target.value as CompetitionTrack)
+                    }
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none"
+                  >
+                    {Object.entries(COMPETITION_TRACKS).map(([value, track]) => (
+                      <option key={value} value={value}>
+                        {track.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </details>
+          </section>
+
+          <section className="rounded-[22px] bg-[#17393a] p-4 text-white shadow-sm">
+            <h2 className="text-base font-bold">Coaching Summary</h2>
+            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-4">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Current BPP</p>
+                <p className="mt-1 text-xl font-bold">{whole.format(currentBpp)}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Gap to Win</p>
+                <p className="mt-1 text-xl font-bold text-[#e2b65e]">{whole.format(gapToLine)}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Status</p>
+                <p className="mt-1 text-sm font-bold text-emerald-300">
+                  {qualifiesNow ? "Qualified" : "In Progress"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Best Next Move</p>
+                <p className="mt-1 text-sm font-bold">
+                  {playUpAvailable
+                    ? qualifiesNow
+                      ? "Play Up"
+                      : "Qualify + Play Up"
+                    : qualifiesNow
+                      ? "Build BPP Gap"
+                      : "Qualify at Your Level"}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
+            <summary className="cursor-pointer list-none px-4 py-3.5 text-base font-bold text-[#17393a]">
+              Qualification Health
+            </summary>
+            <div className="border-t border-slate-200 px-4">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-3 text-xs">
+                <span className="font-semibold text-slate-700">Level Qualification</span>
+                <span className="text-right font-bold text-[#17393a]">
+                  {whole.format(monthlyRecruits)} / {whole.format(levelRule.qualifyRecruits)} recruits | ${whole.format(monthlyPremium)} / ${whole.format(levelRule.qualifyPremium)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-3 text-xs">
+                <span className="font-semibold text-slate-700">Personal Requirement</span>
+                <span className={`font-bold ${personalDirectNeed === 0 && personalPremiumNeed === 0 ? "text-emerald-700" : "text-[#b18745]"}`}>
+                  {personalDirectNeed === 0 && personalPremiumNeed === 0 ? "Met" : "Still Needed"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 py-3 text-xs">
+                <span className="font-semibold text-slate-700">Competition Minimum</span>
+                <span className="font-bold text-[#17393a]">
+                  ${whole.format(competitionCashFlow)} / ${whole.format(competitionCashFlowMinimum)}
+                </span>
+              </div>
+            </div>
+          </details>
+
+          <section className="rounded-[22px] border border-[#d8c59c] bg-[#fffdf8] p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#9a7639]">
+                  Best First Move
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-[#17393a]">
+                  {playUpAvailable
+                    ? playsUpNow
+                      ? "Build the Remaining BPP Gap"
+                      : qualifiesNow
+                        ? "Play Up"
+                        : "Qualify + Play Up"
+                    : qualifiesNow
+                      ? "Build the Remaining BPP Gap"
+                      : "Qualify at Your Level"}
+                </h2>
+              </div>
+              <div className="text-right">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Potential BPP Gain</p>
+                <p className="mt-1 text-lg font-bold text-[#1f6d47]">
+                  +{whole.format(qualifyPlayUpPotential)} BPP
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 divide-x divide-slate-200 border-y border-slate-200 py-3 text-center">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">What You Still Need</p>
+                <p className="mt-1 text-base font-bold text-[#17393a]">
+                  {qualifyRecruitNeed > 0 || qualifyPremiumNeed > 0
+                    ? `${whole.format(qualifyRecruitNeed)} recruits / $${whole.format(qualifyPremiumNeed)}`
+                    : `${whole.format(gapToTarget)} BPP`}
+                </p>
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Coaching Order</p>
+                <p className="mt-1 text-base font-bold text-[#17393a]">1 → 2 → 3</p>
+              </div>
+            </div>
+
+            <details className="mt-3">
+              <summary className="cursor-pointer list-none rounded-xl bg-[#17393a] px-3 py-2.5 text-center text-xs font-bold text-white">
+                View Alternative Strategies
+              </summary>
+              <div className="mt-2 space-y-2">
+                <div className="rounded-xl bg-slate-50 p-3">
+                  <p className="text-xs font-bold text-[#17393a]">Licensing Focus</p>
+                  <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                    Each qualifying license can add {whole.format(bppRules.lifeLicense)} BPP.
+                    {licensesToTarget > 0 ? ` About ${whole.format(licensesToTarget)} licenses would cover the current coaching target gap.` : ""}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-3">
+                  <p className="text-xs font-bold text-[#17393a]">Balanced Production</p>
+                  <p className="mt-1 text-[11px] leading-4 text-slate-500">
+                    Combine recruiting, premium, licensing, trades, securities production, and mortgage production.
+                  </p>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
+            <summary className="cursor-pointer list-none px-4 py-3.5 text-base font-bold text-[#17393a]">
+              Current Winning Position
+            </summary>
+            <div className="grid grid-cols-2 border-t border-slate-200 text-center">
+              {[
+                ["Current BPP", whole.format(currentBpp), "text-[#1f6d47]"],
+                ["Current Rank", `#${whole.format(rank)}`, "text-[#17393a]"],
+                ["Winning Line", whole.format(winningLine), "text-[#17393a]"],
+                ["Your Gap", whole.format(gapToLine), "text-[#b18745]"],
+              ].map(([label, value, color], index) => (
+                <div
+                  key={label}
+                  className={`p-3 ${index % 2 === 0 ? "border-r border-slate-200" : ""} ${index < 2 ? "border-b border-slate-200" : ""}`}
+                >
+                  <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">{label}</p>
+                  <p className={`mt-1 text-base font-bold ${color}`}>{value}</p>
+                </div>
+              ))}
+            </div>
+            <details className="border-t border-slate-200">
+              <summary className="cursor-pointer list-none px-4 py-3 text-center text-xs font-bold text-slate-500">
+                Edit position
+              </summary>
+              <div className="grid grid-cols-2 gap-2.5 px-4 pb-4">
+                <Field label="Current BPP" value={currentBpp} onChange={setCurrentBpp} />
+                <Field label="Current Rank" value={rank} onChange={setRank} />
+                <div className="col-span-2">
+                  <Field label="Current Winning Line" value={winningLine} onChange={setWinningLine} />
+                </div>
+              </div>
+            </details>
+          </details>
+
+          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm">
+            <summary className="cursor-pointer list-none px-4 py-3.5">
+              <p className="text-base font-bold text-[#17393a]">Regular Point Rules</p>
+              <p className="mt-1 text-[10px] text-slate-500">
+                Recruit {whole.format(bppRules.recruit)} | License {whole.format(bppRules.lifeLicense)} | Qualify {whole.format(bppRules.qualify)} | Play Up {whole.format(bppRules.playUp)}
+              </p>
+            </summary>
+            <div className="grid grid-cols-2 gap-2 border-t border-slate-200 p-3">
+              {[
+                ["Recruit", `${whole.format(bppRules.recruit)} BPP`],
+                ["Life License", `${whole.format(bppRules.lifeLicense)} BPP`],
+                ["Qualify", `${whole.format(bppRules.qualify)} BPP`],
+                ["Play Up", `${whole.format(bppRules.playUp)} BPP`],
+                ["Premium", `${precise.format(bppRules.premiumMultiplier)} BPP / $1`],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-slate-50 p-3">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">{label}</p>
+                  <p className="mt-1 text-xs font-bold text-[#17393a]">{value}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+
+          <button
+            type="button"
+            onClick={handleAdminButtonClick}
+            className="w-full rounded-[18px] bg-[#17393a] px-4 py-3.5 text-sm font-bold text-white shadow-sm"
+          >
+            {adminUnlocked ? "Trip Setup / Admin" : "Trip Setup / Admin (Locked)"}
+          </button>
+
+          <button
+            type="button"
+            onClick={downloadCoachingPlanPdf}
+            className="w-full rounded-[18px] border border-[#17393a]/15 bg-white px-4 py-3 text-sm font-bold text-[#17393a]"
+          >
+            Download Coaching Plan PDF
+          </button>
+        </div>
+
+        <div className="hidden md:contents">
         <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Who Are We Coaching?</p>
@@ -2659,6 +2995,7 @@ export default function Home() {
             ))}
           </div>
         </section>
+        </div>
       </div>
       </div>
 
