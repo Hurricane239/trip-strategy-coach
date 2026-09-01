@@ -209,6 +209,30 @@ const COMPETITION_TRACKS = {
   }
 >;
 
+function getDefaultCompetitionCategory(
+  leadershipLevel: LeadershipLevel,
+  competitionTrack: CompetitionTrack,
+): CompetitionCategory {
+  // RVPs compete in the RVP & Above category.
+  if (leadershipLevel === "rvp") {
+    return "rvp_above";
+  }
+
+  // Regional Leaders are Future RVPs in both competition tracks.
+  if (leadershipLevel === "regional_leader") {
+    return "us_future_rvp";
+  }
+
+  // Reps through Division Leaders are Future Regional Leaders.
+  // "U.S. Newly Life Licensed" remains a manual override because
+  // leadership level alone does not tell us whether someone is newly licensed.
+  if (competitionTrack === "extra_slots") {
+    return "us_future_regional_leader";
+  }
+
+  return "us_future_regional_leader";
+}
+
 type SavedTripProfile = {
   id: string;
   tripName: string;
@@ -250,7 +274,7 @@ function Field({
   hint?: string;
 }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </span>
@@ -259,7 +283,7 @@ function Field({
         min="0"
         value={value}
         onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
+        className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
       />
       {hint ? <span className="mt-1.5 block text-xs leading-5 text-slate-400">{hint}</span> : null}
     </label>
@@ -327,7 +351,7 @@ export default function Home() {
   const [competitionTrack, setCompetitionTrack] =
     useState<CompetitionTrack>("original");
   const [competitionCategory, setCompetitionCategory] =
-    useState<CompetitionCategory>("us_future_regional_leader");
+    useState<CompetitionCategory>("us_future_rvp");
   const [monthlyRecruits, setMonthlyRecruits] = useState(3);
   const [directRecruits, setDirectRecruits] = useState(1);
   const [monthlyPremium, setMonthlyPremium] = useState(3500);
@@ -387,7 +411,9 @@ export default function Home() {
     setOriginalCategoryRules(cloneOriginalRules(profile.originalCategoryRules));
     setExtraCategoryRules(cloneExtraRules(profile.extraCategoryRules));
     setCompetitionTrack("original");
-    setCompetitionCategory("us_future_regional_leader");
+    setCompetitionCategory(
+      getDefaultCompetitionCategory(leadershipLevel, "original"),
+    );
     setTripSaveMessage("");
   }
 
@@ -1554,7 +1580,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f4ed] text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-[#f7f4ed] text-slate-900">
       <style jsx global>{`
         .print-only {
           display: none;
@@ -1615,9 +1641,9 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="screen-only">
+      <div className="screen-only w-full max-w-full overflow-x-hidden">
       <section className="border-b border-black/5 bg-[#17393a] px-4 pb-4 pt-5 text-white md:hidden">
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto w-full max-w-md min-w-0">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#e2c88e]">
               Trip Strategy Coach
@@ -1632,9 +1658,9 @@ export default function Home() {
           </div>
 
           <div className="mt-4 rounded-[22px] bg-[#fffdf8] p-4 text-slate-900 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-[-0.03em] text-[#17393a]">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="break-words text-2xl font-semibold tracking-[-0.03em] text-[#17393a]">
                   {tripName}
                 </h1>
                 <p className="mt-0.5 text-lg font-medium text-[#b18745]">{tripSubtitle}</p>
@@ -1644,18 +1670,18 @@ export default function Home() {
               </span>
             </div>
 
-            <div className="mt-4 grid grid-cols-3 divide-x divide-slate-200 border-t border-slate-200 pt-3">
-              <div className="pr-3">
+            <div className="mt-4 grid min-w-0 grid-cols-3 divide-x divide-slate-200 border-t border-slate-200 pt-3">
+              <div className="min-w-0 pr-2">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Category</p>
-                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedCategory.label}</p>
+                <p className="mt-1 break-words text-[10px] font-bold leading-4 text-[#17393a]">{selectedCategory.label}</p>
               </div>
-              <div className="px-3">
+              <div className="min-w-0 px-2">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Winning Slots</p>
-                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedCategory.slotsLabel}</p>
+                <p className="mt-1 break-words text-[10px] font-bold leading-4 text-[#17393a]">{selectedCategory.slotsLabel}</p>
               </div>
-              <div className="pl-3">
+              <div className="min-w-0 pl-2">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Track</p>
-                <p className="mt-1 text-[11px] font-bold leading-4 text-[#17393a]">{selectedTrack.label}</p>
+                <p className="mt-1 break-words text-[10px] font-bold leading-4 text-[#17393a]">{selectedTrack.label}</p>
               </div>
             </div>
           </div>
@@ -1768,7 +1794,7 @@ export default function Home() {
                   void verifyAdminPasscode();
                 }}
               >
-                <label className="block">
+                <label className="block min-w-0">
                   <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Admin Passcode
                   </span>
@@ -2188,14 +2214,14 @@ export default function Home() {
         ) : null}
 
         <div className="space-y-3 md:hidden">
-          <section className="rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-sm">
+          <section className="min-w-0 rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-[#17393a]">Rep Snapshot</h2>
               <span className="text-[10px] font-semibold text-slate-400">Key inputs</span>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2.5">
-              <label className="block">
+            <div className="mt-3 grid min-w-0 grid-cols-2 gap-2.5">
+              <label className="block min-w-0">
                 <span className="mb-1 block text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
                   Teammate Name
                 </span>
@@ -2203,20 +2229,24 @@ export default function Home() {
                   value={coachName}
                   onChange={(event) => setCoachName(event.target.value)}
                   placeholder="Enter name"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
+                  className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
                 />
               </label>
 
-              <label className="block">
+              <label className="block min-w-0">
                 <span className="mb-1 block text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
                   Leadership Level
                 </span>
                 <select
                   value={leadershipLevel}
-                  onChange={(event) =>
-                    setLeadershipLevel(event.target.value as LeadershipLevel)
-                  }
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
+                  onChange={(event) => {
+                    const nextLevel = event.target.value as LeadershipLevel;
+                    setLeadershipLevel(nextLevel);
+                    setCompetitionCategory(
+                      getDefaultCompetitionCategory(nextLevel, competitionTrack),
+                    );
+                  }}
+                  className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 text-xs font-semibold outline-none focus:border-[#b78c45]"
                 >
                   {Object.entries(LEVEL_RULES).map(([value, rule]) => (
                     <option key={value} value={value}>
@@ -2242,7 +2272,7 @@ export default function Home() {
               <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-bold text-[#17393a]">
                 Additional activity inputs
               </summary>
-              <div className="grid grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
+              <div className="grid min-w-0 grid-cols-2 gap-2.5 border-t border-slate-200 p-3">
                 <Field label="Direct Recruits" value={directRecruits} onChange={setDirectRecruits} />
                 <Field label="Personal Premium" value={personalPremium} onChange={setPersonalPremium} />
                 <Field
@@ -2256,10 +2286,14 @@ export default function Home() {
                   </span>
                   <select
                     value={competitionTrack}
-                    onChange={(event) =>
-                      setCompetitionTrack(event.target.value as CompetitionTrack)
-                    }
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none"
+                    onChange={(event) => {
+                      const nextTrack = event.target.value as CompetitionTrack;
+                      setCompetitionTrack(nextTrack);
+                      setCompetitionCategory(
+                        getDefaultCompetitionCategory(leadershipLevel, nextTrack),
+                      );
+                    }}
+                    className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-xs font-semibold text-slate-900 outline-none"
                   >
                     {Object.entries(COMPETITION_TRACKS).map(([value, track]) => (
                       <option key={value} value={value}>
@@ -2272,9 +2306,9 @@ export default function Home() {
             </details>
           </section>
 
-          <section className="rounded-[22px] bg-[#17393a] p-4 text-white shadow-sm">
+          <section className="min-w-0 rounded-[22px] bg-[#17393a] p-4 text-white shadow-sm">
             <h2 className="text-base font-bold">Coaching Summary</h2>
-            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-4">
+            <div className="mt-3 grid min-w-0 grid-cols-2 gap-x-3 gap-y-4">
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Current BPP</p>
                 <p className="mt-1 text-xl font-bold">{whole.format(currentBpp)}</p>
@@ -2291,7 +2325,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Best Next Move</p>
-                <p className="mt-1 text-sm font-bold">
+                <p className="mt-1 break-words text-sm font-bold">
                   {playUpAvailable
                     ? qualifiesNow
                       ? "Play Up"
@@ -2304,14 +2338,14 @@ export default function Home() {
             </div>
           </section>
 
-          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
+          <details className="min-w-0 rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
             <summary className="cursor-pointer list-none px-4 py-3.5 text-base font-bold text-[#17393a]">
               Qualification Health
             </summary>
             <div className="border-t border-slate-200 px-4">
               <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-3 text-xs">
                 <span className="font-semibold text-slate-700">Level Qualification</span>
-                <span className="text-right font-bold text-[#17393a]">
+                <span className="min-w-0 break-words text-right font-bold text-[#17393a]">
                   {whole.format(monthlyRecruits)} / {whole.format(levelRule.qualifyRecruits)} recruits | ${whole.format(monthlyPremium)} / ${whole.format(levelRule.qualifyPremium)}
                 </span>
               </div>
@@ -2330,9 +2364,9 @@ export default function Home() {
             </div>
           </details>
 
-          <section className="rounded-[22px] border border-[#d8c59c] bg-[#fffdf8] p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
+          <section className="min-w-0 rounded-[22px] border border-[#d8c59c] bg-[#fffdf8] p-4 shadow-sm">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
                 <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#9a7639]">
                   Best First Move
                 </p>
@@ -2348,7 +2382,7 @@ export default function Home() {
                       : "Qualify at Your Level"}
                 </h2>
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">Potential BPP Gain</p>
                 <p className="mt-1 text-lg font-bold text-[#1f6d47]">
                   +{whole.format(qualifyPlayUpPotential)} BPP
@@ -2359,7 +2393,7 @@ export default function Home() {
             <div className="mt-3 grid grid-cols-2 divide-x divide-slate-200 border-y border-slate-200 py-3 text-center">
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">What You Still Need</p>
-                <p className="mt-1 text-base font-bold text-[#17393a]">
+                <p className="mt-1 break-words text-sm font-bold text-[#17393a]">
                   {qualifyRecruitNeed > 0 || qualifyPremiumNeed > 0
                     ? `${whole.format(qualifyRecruitNeed)} recruits / $${whole.format(qualifyPremiumNeed)}`
                     : `${whole.format(gapToTarget)} BPP`}
@@ -2393,7 +2427,7 @@ export default function Home() {
             </details>
           </section>
 
-          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
+          <details className="min-w-0 rounded-[22px] border border-slate-200/80 bg-white shadow-sm" open>
             <summary className="cursor-pointer list-none px-4 py-3.5 text-base font-bold text-[#17393a]">
               Current Winning Position
             </summary>
@@ -2427,7 +2461,7 @@ export default function Home() {
             </details>
           </details>
 
-          <details className="rounded-[22px] border border-slate-200/80 bg-white shadow-sm">
+          <details className="min-w-0 rounded-[22px] border border-slate-200/80 bg-white shadow-sm">
             <summary className="cursor-pointer list-none px-4 py-3.5">
               <p className="text-base font-bold text-[#17393a]">Regular Point Rules</p>
               <p className="mt-1 text-[10px] text-slate-500">
@@ -2492,7 +2526,13 @@ export default function Home() {
               <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Current Leadership Level</span>
               <select
                 value={leadershipLevel}
-                onChange={(event) => setLeadershipLevel(event.target.value as LeadershipLevel)}
+                onChange={(event) => {
+                  const nextLevel = event.target.value as LeadershipLevel;
+                  setLeadershipLevel(nextLevel);
+                  setCompetitionCategory(
+                    getDefaultCompetitionCategory(nextLevel, competitionTrack),
+                  );
+                }}
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
               >
                 {Object.entries(LEVEL_RULES).map(([value, rule]) => (
@@ -2508,7 +2548,9 @@ export default function Home() {
                 onChange={(event) => {
                   const nextTrack = event.target.value as CompetitionTrack;
                   setCompetitionTrack(nextTrack);
-                  setCompetitionCategory("us_future_regional_leader");
+                  setCompetitionCategory(
+                    getDefaultCompetitionCategory(leadershipLevel, nextTrack),
+                  );
                 }}
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#b78c45] focus:ring-4 focus:ring-[#b78c45]/10"
               >
