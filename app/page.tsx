@@ -2737,7 +2737,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1.45fr_0.85fr]">
+        <section className="grid items-start gap-6 lg:grid-cols-[0.92fr_1.08fr]">
           <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -2802,11 +2802,11 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[#17393a] p-6 text-white shadow-sm sm:p-8">
+          <div className="rounded-[28px] bg-[#17393a] p-5 text-white shadow-sm sm:p-6">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e2c88e]">Where Am I Falling Short?</p>
             <h2 className="mt-2 text-2xl font-semibold">What You Still Need</h2>
 
-            <div className="mt-7 space-y-4">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl bg-white/10 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -2821,7 +2821,7 @@ export default function Home() {
                   <span className="text-xs font-semibold text-white/75">BPP added when completed</span>
                   <span className="text-sm font-bold text-[#f3d99f]">+{whole.format(bppRules.qualify)} BPP</span>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <div className="rounded-xl bg-white/10 p-3">
                     <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">Recruits</p>
                     <p className="mt-1 font-bold">{monthlyRecruits} / {levelRule.qualifyRecruits}</p>
@@ -2944,7 +2944,7 @@ export default function Home() {
               ) : null}
             </div>
 
-            <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs leading-5 text-white/65">
               BPP position and qualification health are separate. Strong points do not replace the required level and competition minimums.
             </p>
           </div>
