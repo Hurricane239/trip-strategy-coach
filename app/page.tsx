@@ -873,13 +873,25 @@ export default function Home() {
   const isExtraLifeLicensedCategory =
     competitionTrack === "extra_slots" &&
     competitionCategory === "us_newly_life_licensed";
+  const isOriginalFutureCategory =
+    competitionTrack === "original" &&
+    (competitionCategory === "us_future_rvp" ||
+      competitionCategory === "us_future_regional_leader");
+  const isExtraFutureCategory =
+    competitionTrack === "extra_slots" &&
+    (competitionCategory === "us_future_rvp" ||
+      competitionCategory === "us_future_regional_leader");
   const usesCompetitionPremiumMinimum =
-    isOriginalLifeLicensedCategory || isExtraLifeLicensedCategory;
-  const competitionPremiumMinimum = isOriginalLifeLicensedCategory
-    ? 7000
-    : isExtraLifeLicensedCategory
-      ? 4000
-      : 0;
+    isOriginalFutureCategory ||
+    isOriginalLifeLicensedCategory ||
+    isExtraFutureCategory ||
+    isExtraLifeLicensedCategory;
+  const competitionPremiumMinimum =
+    isOriginalFutureCategory || isOriginalLifeLicensedCategory
+      ? 7000
+      : isExtraFutureCategory || isExtraLifeLicensedCategory
+        ? 4000
+        : 0;
   const competitionPremiumNeed = Math.max(
     0,
     competitionPremiumMinimum - competitionPremium,
@@ -935,15 +947,20 @@ export default function Home() {
   const competitionCashFlowMinimum =
     competitionTrack === "original"
       ? originalCashFlowMinimum
-      : extraCashFlowMinimum;
+      : isExtraFutureCategory
+        ? 6000
+        : extraCashFlowMinimum;
+  const usesCompetitionCashFlowMinimum =
+    !isOriginalLifeLicensedCategory &&
+    !isExtraLifeLicensedCategory;
   const cashFlowMinimumSet =
-    !usesCompetitionPremiumMinimum && competitionCashFlowMinimum > 0;
+    usesCompetitionCashFlowMinimum && competitionCashFlowMinimum > 0;
   const competitionCashFlowNeed = Math.max(
     0,
     competitionCashFlowMinimum - competitionCashFlow,
   );
   const cashFlowOnTarget =
-    !usesCompetitionPremiumMinimum &&
+    usesCompetitionCashFlowMinimum &&
     cashFlowMinimumSet &&
     competitionCashFlow >= competitionCashFlowMinimum;
 
@@ -987,11 +1004,13 @@ export default function Home() {
     printShortfalls.push(
       `Competition premium: still need $${whole.format(competitionPremiumNeed)} to reach the $${whole.format(competitionPremiumMinimum)} minimum for ${selectedCategory.label}.`,
     );
-  } else if (cashFlowMinimumSet && !cashFlowOnTarget) {
+  }
+
+  if (cashFlowMinimumSet && !cashFlowOnTarget) {
     printShortfalls.push(
       `Competition cash flow: still need $${whole.format(competitionCashFlowNeed)} to reach the full-period minimum.`,
     );
-  } else if (!usesCompetitionPremiumMinimum && !cashFlowMinimumSet) {
+  } else if (usesCompetitionCashFlowMinimum && !cashFlowMinimumSet) {
     printShortfalls.push(
       "Competition cash-flow minimum has not been entered for this track yet.",
     );
@@ -2389,10 +2408,12 @@ export default function Home() {
                       label="Current Competition Premium"
                       value={competitionPremium}
                       onChange={setCompetitionPremium}
-                      hint={`Minimum for this category: $${whole.format(competitionPremiumMinimum)}. No cash-flow minimum applies.`}
+                      hint={`Minimum for this category: $${whole.format(competitionPremiumMinimum)}.`}
                     />
                   </div>
-                ) : (
+                ) : null}
+
+                {usesCompetitionCashFlowMinimum ? (
                   <div className="col-span-2">
                     <Field
                       label="Competition Cash Flow"
@@ -2402,7 +2423,7 @@ export default function Home() {
                       onChange={setCompetitionCashFlow}
                     />
                   </div>
-                )}
+                ) : null}
               </div>
             </details>
           </section>
@@ -2456,28 +2477,22 @@ export default function Home() {
                   {personalDirectNeed === 0 && personalPremiumNeed === 0 ? "Met" : "Still Needed"}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-3 py-3 text-xs">
+              {usesCompetitionPremiumMinimum ? <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-3 text-xs">
                 <span className="font-semibold text-slate-700">
-                  {usesCompetitionPremiumMinimum
-                    ? "Competition Premium Minimum"
-                    : "Competition Cash Flow Minimum"}
+                  Competition Premium Minimum
                 </span>
                 <span
-                  className={`font-bold ${
-                    usesCompetitionPremiumMinimum
-                      ? competitionPremiumOnTarget
-                        ? "text-emerald-700"
-                        : "text-[#b18745]"
-                      : cashFlowOnTarget
-                        ? "text-emerald-700"
-                        : "text-[#17393a]"
-                  }`}
+                  className={`font-bold ${competitionPremiumOnTarget ? "text-emerald-700" : "text-[#b18745]"}`}
                 >
-                  {usesCompetitionPremiumMinimum
-                    ? `$${whole.format(competitionPremium)} / $${whole.format(competitionPremiumMinimum)}`
-                    : `$${whole.format(competitionCashFlow)} / $${whole.format(competitionCashFlowMinimum)}`}
+                  ${whole.format(competitionPremium)} / ${whole.format(competitionPremiumMinimum)}
                 </span>
-              </div>
+              </div> : null}
+              {usesCompetitionCashFlowMinimum ? <div className="flex items-center justify-between gap-3 py-3 text-xs">
+                <span className="font-semibold text-slate-700">Competition Cash Flow Minimum</span>
+                <span className={`font-bold ${cashFlowOnTarget ? "text-emerald-700" : "text-[#b18745]"}`}>
+                  ${whole.format(competitionCashFlow)} / ${whole.format(competitionCashFlowMinimum)}
+                </span>
+              </div> : null}
             </div>
           </details>
 
@@ -2853,7 +2868,7 @@ export default function Home() {
                         Competition Premium Minimum
                       </p>
                       <p className="mt-1 text-xs text-white/60">
-                        {selectedCategory.label}: ${whole.format(competitionPremiumMinimum)} premium minimum. No cash-flow minimum applies.
+                        {selectedCategory.label}: ${whole.format(competitionPremiumMinimum)} premium minimum.
                       </p>
                     </div>
                     <Status
@@ -2876,7 +2891,9 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : null}
+
+              {usesCompetitionCashFlowMinimum ? (
                 <div className="rounded-2xl bg-white/10 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -2896,7 +2913,7 @@ export default function Home() {
                     />
                   </div>
 
-                  {competitionTrack === "extra_slots" ? (
+                  {competitionTrack === "extra_slots" && !isExtraFutureCategory ? (
                     <div className="mt-4">
                       <Field
                         label="Extra Slots Cash Flow Minimum"
@@ -2924,7 +2941,7 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/70">
