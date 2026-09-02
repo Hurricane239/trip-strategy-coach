@@ -1560,6 +1560,17 @@ export default function Home() {
     let actionY = actionBoxY + 46;
 
     if (strategyMode === "coach") {
+      actionY = addWrappedText(
+        "Pull up your P/S Log. Who can I help get promoted and licensed on my team that can help me win the trip?",
+        margin + 14,
+        actionY,
+        contentWidth - 28,
+        9,
+        [226, 200, 142],
+        12,
+      );
+      actionY += 5;
+
       if (coachModeActions.length > 0) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
@@ -3303,6 +3314,11 @@ export default function Home() {
                       badLabel={winningLine > 0 ? "More Activity Needed" : "Enter Winning Line"}
                     />
                   </div>
+                  <div className="mt-4 rounded-2xl border border-[#e2c88e]/50 bg-[#e2c88e]/15 px-4 py-3">
+                    <p className="text-sm font-bold leading-6 text-[#f3d99f]">
+                      Pull up your P/S Log. Who can I help get promoted &amp; licensed on my team that can help me win the trip?
+                    </p>
+                  </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-4">
                     {[
                       ["Current Gap", winningLine > 0 ? `${whole.format(gapToLine)} BPP` : "Not calculated"],
@@ -3525,6 +3541,9 @@ export default function Home() {
 
             {strategyMode === "coach" ? (
               <div className="mt-3">
+                <p className="mb-2 rounded-lg border border-[#e2c88e]/40 bg-[#e2c88e]/10 px-2.5 py-2 text-[10px] font-bold leading-4 text-[#f3d99f]">
+                  Pull up your P/S Log. Who can I help get promoted &amp; licensed on my team that can help me win the trip?
+                </p>
                 {coachModeActions.length > 0 ? (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] leading-4">
                     {coachModeActions.map((action) => (
