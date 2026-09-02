@@ -1019,6 +1019,35 @@ export default function Home() {
     );
   }
 
+  const strategyPositionSummary =
+    winningLine > 0
+      ? `${rank > 0 ? `#${whole.format(rank)} with ` : ""}${whole.format(currentBpp)} BPP — ${
+          gapToLine > 0
+            ? `${whole.format(gapToLine)} below today's winning line`
+            : `${whole.format(currentBpp - winningLine)} above today's winning line`
+        }.`
+      : "Winning position has not been entered yet.";
+
+  const strategyNeedItems = [
+    qualifyRecruitNeed > 0 || qualifyPremiumNeed > 0
+      ? `${whole.format(qualifyRecruitNeed)} team recruit${qualifyRecruitNeed === 1 ? "" : "s"} and $${whole.format(qualifyPremiumNeed)} team premium to qualify`
+      : "",
+    belowRvp && (personalDirectNeed > 0 || personalPremiumNeed > 0)
+      ? `${whole.format(personalDirectNeed)} direct recruit${personalDirectNeed === 1 ? "" : "s"} and $${whole.format(personalPremiumNeed)} personal premium`
+      : "",
+    usesCompetitionPremiumMinimum && competitionPremiumNeed > 0
+      ? `$${whole.format(competitionPremiumNeed)} competition premium`
+      : "",
+    cashFlowMinimumSet && competitionCashFlowNeed > 0
+      ? `$${whole.format(competitionCashFlowNeed)} competition cash flow`
+      : "",
+  ].filter(Boolean);
+
+  const strategyNeedsSummary =
+    strategyNeedItems.length > 0
+      ? strategyNeedItems.join("; ") + "."
+      : "All tracked qualification minimums are currently met.";
+
   const coachModeActions = [
     strategy.playUps > 0
       ? `${whole.format(strategy.playUps)} Play Up${strategy.playUps === 1 ? "" : "s"}`
@@ -1762,15 +1791,15 @@ export default function Home() {
         </div>
       </section>
       <section className="hidden border-b border-black/5 bg-[radial-gradient(circle_at_top_left,_rgba(80,190,200,0.24),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(215,178,101,0.25),_transparent_30%),linear-gradient(135deg,#f7f4ed_0%,#fffdf8_55%,#edf9f7_100%)] md:block">
-        <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-14">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mx-auto max-w-7xl px-6 py-6 lg:px-8 lg:py-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#9a7639]">Trip Strategy Coach</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-[#17393a] sm:text-5xl">
+              <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#17393a] sm:text-4xl">
                 {tripName}
-                <span className="block font-light text-[#b18745]">{tripSubtitle}</span>
+                <span className="ml-2 font-light text-[#b18745]">{tripSubtitle}</span>
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-5 text-slate-600">
                 See where you are, what you need, and the activity that can move you toward a winning position.
               </p>
             </div>
@@ -1780,7 +1809,7 @@ export default function Home() {
                 ["Category", selectedCategory.label],
                 ["Winning Slots", selectedCategory.slotsLabel],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl border border-white/70 bg-white/75 px-4 py-3 shadow-sm backdrop-blur">
+                <div key={label} className="rounded-2xl border border-white/70 bg-white/75 px-4 py-2.5 shadow-sm backdrop-blur">
                   <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
                   <p className="mt-1 text-sm font-bold text-[#17393a]">{value}</p>
                 </div>
@@ -1790,12 +1819,12 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-6 py-8 lg:px-8 lg:py-10">
-        <div className="hidden flex-wrap justify-end gap-3 md:flex">
+      <div className="mx-auto max-w-7xl space-y-3 px-6 py-4 lg:px-8 lg:py-5">
+        <div className="hidden flex-wrap justify-end gap-2 md:flex">
           <button
             type="button"
             onClick={handleAdminButtonClick}
-            className="rounded-2xl border border-[#17393a]/15 bg-white px-5 py-3 text-sm font-bold text-[#17393a] shadow-sm transition hover:bg-slate-50"
+            className="rounded-xl border border-[#17393a]/15 bg-white px-4 py-2 text-xs font-bold text-[#17393a] shadow-sm transition hover:bg-slate-50"
           >
             {adminUnlocked && showTripSetup
               ? "Close Trip Setup"
@@ -1806,14 +1835,14 @@ export default function Home() {
           <button
             type="button"
             onClick={downloadCoachingPlanPdf}
-            className="rounded-2xl bg-[#17393a] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#214a4b]"
+            className="rounded-xl bg-[#17393a] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#214a4b]"
           >
             Download Coaching Plan PDF
           </button>
         </div>
 
         <div
-          className={`hidden rounded-2xl border px-4 py-3 text-sm md:block ${
+          className={`hidden rounded-xl border px-3 py-2 text-xs md:block ${
             databaseStatus === "connected"
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : databaseStatus === "error"
@@ -1831,11 +1860,11 @@ export default function Home() {
           <span className="ml-2">{databaseMessage}</span>
         </div>
 
-        <nav className="hidden rounded-[22px] border border-slate-200/80 bg-white p-1.5 shadow-sm md:flex">
+        <nav className="hidden rounded-[18px] border border-slate-200/80 bg-white p-1 shadow-sm md:flex">
           <button
             type="button"
             onClick={() => setActivePageTab("position")}
-            className={`flex-1 rounded-[17px] px-5 py-3 text-sm font-bold transition ${
+            className={`flex-1 rounded-[14px] px-5 py-2.5 text-sm font-bold transition ${
               activePageTab === "position"
                 ? "bg-[#17393a] text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-[#17393a]"
@@ -1846,7 +1875,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setActivePageTab("strategy")}
-            className={`flex-1 rounded-[17px] px-5 py-3 text-sm font-bold transition ${
+            className={`flex-1 rounded-[14px] px-5 py-2.5 text-sm font-bold transition ${
               activePageTab === "strategy"
                 ? "bg-[#17393a] text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-[#17393a]"
@@ -2670,16 +2699,16 @@ export default function Home() {
         <div className="hidden md:contents">
         {activePageTab === "position" ? (
         <>
-        <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Who Are We Coaching?</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#17393a]">Rep Profile + This Month&apos;s Activity</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+            <h2 className="mt-1 text-xl font-semibold text-[#17393a]">Rep Profile + This Month&apos;s Activity</h2>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-slate-500">
               Start with the person, their current leadership level, and the activity already completed this month.
             </p>
           </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <label className="block">
               <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Name</span>
               <input
@@ -2751,7 +2780,7 @@ export default function Home() {
             </label>
           </div>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Field label="Current Month Team Recruits"
                 placeholder="e.g. 3"
                 blankWhenZero value={monthlyRecruits} onChange={setMonthlyRecruits} hint="Base-shop recruiting activity used for the level target." />
@@ -2768,7 +2797,7 @@ export default function Home() {
         </section>
 
         <section className="grid items-start gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-          <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Where Am I?</p>
@@ -2819,7 +2848,7 @@ export default function Home() {
               </div>
             </div> : null}
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <Field label="Current BPP"
                 placeholder="e.g. 850000"
                 blankWhenZero value={currentBpp} onChange={setCurrentBpp} />
@@ -2832,7 +2861,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-[28px] bg-[#17393a] p-5 text-white shadow-sm sm:p-6">
+          <div className="rounded-[22px] bg-[#17393a] p-5 text-white shadow-sm">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e2c88e]">Where Am I Falling Short?</p>
             <h2 className="mt-2 text-2xl font-semibold">What You Still Need</h2>
 
@@ -2996,6 +3025,25 @@ export default function Home() {
 
         {activePageTab === "strategy" ? (
         <>
+        <section className="grid gap-3 rounded-[22px] border border-[#b9d9d8] bg-[#f0f9f8] p-4 lg:grid-cols-2">
+          <div className="rounded-2xl bg-white/80 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a7f86]">
+              Where You Are
+            </p>
+            <p className="mt-1 text-sm font-bold leading-5 text-[#17393a]">
+              {strategyPositionSummary}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white/80 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#b18745]">
+              What You&apos;re Falling Short
+            </p>
+            <p className="mt-1 text-sm font-bold leading-5 text-[#17393a]">
+              {strategyNeedsSummary}
+            </p>
+          </div>
+        </section>
+
         <section className="w-full">
           <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
