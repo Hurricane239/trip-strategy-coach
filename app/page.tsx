@@ -386,11 +386,14 @@ export default function Home() {
   });
 
   function toggleStrategyField(field: keyof Strategy) {
-    setVisibleStrategyFields((current) =>
-      current.includes(field)
-        ? current.filter((item) => item !== field)
-        : [...current, field],
-    );
+    setVisibleStrategyFields((current) => {
+      if (current.includes(field)) {
+        setStrategy((previous) => ({ ...previous, [field]: 0 }));
+        return current.filter((item) => item !== field);
+      }
+
+      return [...current, field];
+    });
   }
 
   function cloneOriginalRules(
@@ -2306,14 +2309,14 @@ export default function Home() {
               </label>
 
               <Field
-                label="Current Month Recruits"
+                label="Current Month Team Recruits"
                 placeholder="e.g. 3"
                 blankWhenZero
                 value={monthlyRecruits}
                 onChange={setMonthlyRecruits}
               />
               <Field
-                label="Current Month Premium"
+                label="Current Month Team Premium"
                 placeholder="e.g. 3500"
                 blankWhenZero
                 value={monthlyPremium}
@@ -2704,13 +2707,13 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            <Field label="Current Month Recruits"
+            <Field label="Current Month Team Recruits"
                 placeholder="e.g. 3"
                 blankWhenZero value={monthlyRecruits} onChange={setMonthlyRecruits} hint="Base-shop recruiting activity used for the level target." />
             <Field label="Direct Recruits"
                 placeholder="e.g. 1"
                 blankWhenZero value={directRecruits} onChange={setDirectRecruits} hint={belowRvp ? "Personal requirement: at least 1 direct recruit." : "Tracked for coaching."} />
-            <Field label="Current Month Premium"
+            <Field label="Current Month Team Premium"
                 placeholder="e.g. 3500"
                 blankWhenZero value={monthlyPremium} onChange={setMonthlyPremium} hint="Premium used toward the level target." />
             <Field label="Personal Premium"
