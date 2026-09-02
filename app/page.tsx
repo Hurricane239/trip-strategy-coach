@@ -258,6 +258,21 @@ type SavedTripProfile = {
 };
 
 const TRIP_STORAGE_KEY = "trip-strategy-coach:saved-trips:v1";
+const COACHING_SESSION_STORAGE_KEY =
+  "trip-strategy-coach:coaching-session:v1";
+
+const EMPTY_STRATEGY: Strategy = {
+  recruits: 0,
+  premium: 0,
+  initialTrades: 0,
+  securitiesProduction: 0,
+  mortgageProduction: 0,
+  lifeLicenses: 0,
+  securitiesLicenses: 0,
+  mortgageLicenses: 0,
+  qualifies: 0,
+  playUps: 0,
+};
 
 const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const precise = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
@@ -372,19 +387,173 @@ export default function Home() {
   const [directRecruits, setDirectRecruits] = useState(0);
   const [monthlyPremium, setMonthlyPremium] = useState(0);
   const [personalPremium, setPersonalPremium] = useState(0);
+  const [hasRestoredCoachingSession, setHasRestoredCoachingSession] =
+    useState(false);
 
-  const [strategy, setStrategy] = useState<Strategy>({
-    recruits: 0,
-    premium: 0,
-    initialTrades: 0,
-    securitiesProduction: 0,
-    mortgageProduction: 0,
-    lifeLicenses: 0,
-    securitiesLicenses: 0,
-    mortgageLicenses: 0,
-    qualifies: 0,
-    playUps: 0,
-  });
+  const [strategy, setStrategy] = useState<Strategy>({ ...EMPTY_STRATEGY });
+
+  useEffect(() => {
+    if (databaseStatus === "loading" || hasRestoredCoachingSession) {
+      return;
+    }
+
+    try {
+      const savedSession = window.localStorage.getItem(
+        COACHING_SESSION_STORAGE_KEY,
+      );
+
+      if (savedSession) {
+        const saved = JSON.parse(savedSession) as Record<string, unknown>;
+        const numberValue = (value: unknown) =>
+          Math.max(0, Number(value) || 0);
+
+        setCurrentBpp(numberValue(saved.currentBpp));
+        setRank(numberValue(saved.rank));
+        setWinningLine(numberValue(saved.winningLine));
+        setSafetyMargin(numberValue(saved.safetyMargin) || 100000);
+        setCoachName(typeof saved.coachName === "string" ? saved.coachName : "");
+        setCompetitionCashFlow(numberValue(saved.competitionCashFlow));
+        setCompetitionPremium(numberValue(saved.competitionPremium));
+        setExtraCashFlowMinimum(numberValue(saved.extraCashFlowMinimum));
+        setMonthlyRecruits(numberValue(saved.monthlyRecruits));
+        setDirectRecruits(numberValue(saved.directRecruits));
+        setMonthlyPremium(numberValue(saved.monthlyPremium));
+        setPersonalPremium(numberValue(saved.personalPremium));
+
+        if (
+          typeof saved.leadershipLevel === "string" &&
+          saved.leadershipLevel in LEVEL_RULES
+        ) {
+          setLeadershipLevel(saved.leadershipLevel as LeadershipLevel);
+        }
+
+        if (saved.competitionTrack === "original" || saved.competitionTrack === "extra_slots") {
+          setCompetitionTrack(saved.competitionTrack);
+        }
+
+        if (typeof saved.competitionCategory === "string") {
+          setCompetitionCategory(saved.competitionCategory as CompetitionCategory);
+        }
+
+        if (saved.strategyMode === "recommended" || saved.strategyMode === "coach") {
+          setStrategyMode(saved.strategyMode);
+        }
+
+        if (saved.activePageTab === "position" || saved.activePageTab === "strategy") {
+          setActivePageTab(saved.activePageTab);
+        }
+
+        if (saved.strategy && typeof saved.strategy === "object") {
+          const savedStrategy = saved.strategy as Partial<Strategy>;
+          setStrategy({
+            recruits: numberValue(savedStrategy.recruits),
+            premium: numberValue(savedStrategy.premium),
+            initialTrades: numberValue(savedStrategy.initialTrades),
+            securitiesProduction: numberValue(savedStrategy.securitiesProduction),
+            mortgageProduction: numberValue(savedStrategy.mortgageProduction),
+            lifeLicenses: numberValue(savedStrategy.lifeLicenses),
+            securitiesLicenses: numberValue(savedStrategy.securitiesLicenses),
+            mortgageLicenses: numberValue(savedStrategy.mortgageLicenses),
+            qualifies: numberValue(savedStrategy.qualifies),
+            playUps: numberValue(savedStrategy.playUps),
+          });
+        }
+
+        if (Array.isArray(saved.visibleStrategyFields)) {
+          const validFields = Object.keys(EMPTY_STRATEGY);
+          setVisibleStrategyFields(
+            saved.visibleStrategyFields.filter(
+              (field): field is keyof Strategy =>
+                typeof field === "string" && validFields.includes(field),
+            ),
+          );
+        }
+      }
+    } catch {
+      window.localStorage.removeItem(COACHING_SESSION_STORAGE_KEY);
+    } finally {
+      setHasRestoredCoachingSession(true);
+    }
+  }, [databaseStatus, hasRestoredCoachingSession]);
+
+  useEffect(() => {
+    if (!hasRestoredCoachingSession) {
+      return;
+    }
+
+    window.localStorage.setItem(
+      COACHING_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        currentBpp,
+        rank,
+        winningLine,
+        safetyMargin,
+        coachName,
+        competitionCashFlow,
+        competitionPremium,
+        extraCashFlowMinimum,
+        leadershipLevel,
+        competitionTrack,
+        competitionCategory,
+        monthlyRecruits,
+        directRecruits,
+        monthlyPremium,
+        personalPremium,
+        strategyMode,
+        activePageTab,
+        visibleStrategyFields,
+        strategy,
+      }),
+    );
+  }, [
+    hasRestoredCoachingSession,
+    currentBpp,
+    rank,
+    winningLine,
+    safetyMargin,
+    coachName,
+    competitionCashFlow,
+    competitionPremium,
+    extraCashFlowMinimum,
+    leadershipLevel,
+    competitionTrack,
+    competitionCategory,
+    monthlyRecruits,
+    directRecruits,
+    monthlyPremium,
+    personalPremium,
+    strategyMode,
+    activePageTab,
+    visibleStrategyFields,
+    strategy,
+  ]);
+
+  function resetCoachingSession() {
+    if (!window.confirm("Reset all coaching information and strategy activity to zero?")) {
+      return;
+    }
+
+    window.localStorage.removeItem(COACHING_SESSION_STORAGE_KEY);
+    setCurrentBpp(0);
+    setRank(0);
+    setWinningLine(0);
+    setSafetyMargin(100000);
+    setCoachName("");
+    setCompetitionCashFlow(0);
+    setCompetitionPremium(0);
+    setExtraCashFlowMinimum(0);
+    setLeadershipLevel("regional_leader");
+    setCompetitionTrack("original");
+    setCompetitionCategory("us_future_rvp");
+    setMonthlyRecruits(0);
+    setDirectRecruits(0);
+    setMonthlyPremium(0);
+    setPersonalPremium(0);
+    setStrategyMode("recommended");
+    setActivePageTab("position");
+    setVisibleStrategyFields([]);
+    setStrategy({ ...EMPTY_STRATEGY });
+  }
 
   function toggleStrategyField(field: keyof Strategy) {
     setVisibleStrategyFields((current) => {
@@ -1743,17 +1912,26 @@ export default function Home() {
       <div className="screen-only w-full max-w-full overflow-x-hidden">
       <section className="border-b border-black/5 bg-[#17393a] px-4 pb-4 pt-5 text-white md:hidden">
         <div className="mx-auto w-full max-w-md min-w-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#e2c88e]">
               Trip Strategy Coach
             </p>
-            <button
-              type="button"
-              onClick={handleAdminButtonClick}
-              className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-white/90"
-            >
-              Admin
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={resetCoachingSession}
+                className="rounded-xl border border-[#e2c88e]/40 px-3 py-2 text-xs font-bold text-[#f3d99f]"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={handleAdminButtonClick}
+                className="rounded-xl border border-white/15 px-3 py-2 text-xs font-bold text-white/90"
+              >
+                Admin
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 rounded-[22px] bg-[#fffdf8] p-4 text-slate-900 shadow-sm">
@@ -1817,6 +1995,13 @@ export default function Home() {
 
       <div className="mx-auto max-w-7xl space-y-3 px-6 py-4 lg:px-8 lg:py-5">
         <div className="hidden flex-wrap justify-end gap-2 md:flex">
+          <button
+            type="button"
+            onClick={resetCoachingSession}
+            className="rounded-xl border border-[#b18745]/35 bg-[#fffaf0] px-4 py-2 text-xs font-bold text-[#8a642a] shadow-sm transition hover:bg-[#fff6df]"
+          >
+            Reset Session
+          </button>
           <button
             type="button"
             onClick={handleAdminButtonClick}
