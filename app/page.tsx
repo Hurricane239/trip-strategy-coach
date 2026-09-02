@@ -322,8 +322,6 @@ export default function Home() {
   const [activePageTab, setActivePageTab] = useState<"position" | "strategy">(
     "position",
   );
-  const [strategyName, setStrategyName] = useState("Coach's Custom Strategy");
-  const [coachNotes, setCoachNotes] = useState("");
   const [visibleStrategyFields, setVisibleStrategyFields] = useState<
     Array<keyof Strategy>
   >([]);
@@ -1526,7 +1524,7 @@ export default function Home() {
 
     const actionTitle =
       strategyMode === "coach"
-        ? strategyName || "Coach's Custom Strategy"
+        ? "Coach Mode Strategy"
         : playUpAvailable
           ? playsUpNow
             ? "Build the Remaining BPP Gap"
@@ -1562,19 +1560,6 @@ export default function Home() {
     let actionY = actionBoxY + 46;
 
     if (strategyMode === "coach") {
-      if (coachNotes) {
-        actionY = addWrappedText(
-          coachNotes,
-          margin + 14,
-          actionY,
-          contentWidth - 28,
-          8.5,
-          [218, 226, 226],
-          11,
-        );
-        actionY += 3;
-      }
-
       if (coachModeActions.length > 0) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
@@ -3236,36 +3221,11 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="mt-8">
-                <div className="rounded-[24px] border border-[#b9d9d8] bg-[#f0f9f8] p-5">
-                  <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-                    <label className="block">
-                      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Strategy Name</span>
-                      <input
-                        value={strategyName}
-                        onChange={(event) => setStrategyName(event.target.value)}
-                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1a7f86] focus:ring-4 focus:ring-[#1a7f86]/10"
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Coach Notes</span>
-                      <input
-                        value={coachNotes}
-                        onChange={(event) => setCoachNotes(event.target.value)}
-                        placeholder="Example: Focus on 3 pending licenses, then push for Play Up."
-                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#1a7f86] focus:ring-4 focus:ring-[#1a7f86]/10"
-                      />
-                    </label>
-                  </div>
-                  <p className="mt-4 text-sm leading-6 text-slate-600">
-                    Build any strategy you want. Use the inputs below to model ideas such as getting 3 people licensed this month, Qualifying, Playing Up, adding premium, or combining several activities.
-                  </p>
-                </div>
-
-                <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-[#edf8f6] px-4 py-3">
+              <div className="mt-5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#edf8f6] px-4 py-3">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1a7f86]">{strategyName || "Custom Coach Strategy"}</p>
-                    <p className="mt-1 text-xs text-slate-500">{coachNotes || "Adjust the activity below and watch the projection change."}</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1a7f86]">Coach Mode Strategy</p>
+                    <p className="mt-1 text-xs text-slate-500">Select activity below and the system will build the coaching direction.</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a7f86]">Strategy Adds</p>
@@ -3273,7 +3233,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Add activity to the strategy
                   </p>
@@ -3335,7 +3295,7 @@ export default function Home() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e2c88e]">Your Coaching Plan</p>
-                      <h3 className="mt-1 text-xl font-bold">{strategyName || "Coach's Custom Strategy"}</h3>
+                      <h3 className="mt-1 text-xl font-bold">Coach Mode Strategy</h3>
                     </div>
                     <Status
                       ok={winningLine > 0 && projectedBpp >= coachingTarget}
@@ -3541,7 +3501,7 @@ export default function Home() {
                 </p>
                 <h2 className="mt-1 text-xl font-bold">
                   {strategyMode === "coach"
-                    ? strategyName || "Coach's Custom Strategy"
+                    ? "Coach Mode Strategy"
                     : playUpAvailable
                       ? playsUpNow
                         ? "Build the Remaining BPP Gap"
@@ -3565,9 +3525,6 @@ export default function Home() {
 
             {strategyMode === "coach" ? (
               <div className="mt-3">
-                {coachNotes ? (
-                  <p className="mb-2 text-[10px] leading-4 text-white/75">{coachNotes}</p>
-                ) : null}
                 {coachModeActions.length > 0 ? (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] leading-4">
                     {coachModeActions.map((action) => (
