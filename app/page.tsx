@@ -319,6 +319,9 @@ export default function Home() {
   const [competitionPremium, setCompetitionPremium] = useState(0);
   const [extraCashFlowMinimum, setExtraCashFlowMinimum] = useState(0);
   const [strategyMode, setStrategyMode] = useState<"recommended" | "coach">("recommended");
+  const [activePageTab, setActivePageTab] = useState<"position" | "strategy">(
+    "position",
+  );
   const [strategyName, setStrategyName] = useState("Coach's Custom Strategy");
   const [coachNotes, setCoachNotes] = useState("");
   const [visibleStrategyFields, setVisibleStrategyFields] = useState<
@@ -1828,6 +1831,31 @@ export default function Home() {
           <span className="ml-2">{databaseMessage}</span>
         </div>
 
+        <nav className="hidden rounded-[22px] border border-slate-200/80 bg-white p-1.5 shadow-sm md:flex">
+          <button
+            type="button"
+            onClick={() => setActivePageTab("position")}
+            className={`flex-1 rounded-[17px] px-5 py-3 text-sm font-bold transition ${
+              activePageTab === "position"
+                ? "bg-[#17393a] text-white shadow-sm"
+                : "text-slate-500 hover:bg-slate-50 hover:text-[#17393a]"
+            }`}
+          >
+            My Position
+          </button>
+          <button
+            type="button"
+            onClick={() => setActivePageTab("strategy")}
+            className={`flex-1 rounded-[17px] px-5 py-3 text-sm font-bold transition ${
+              activePageTab === "strategy"
+                ? "bg-[#17393a] text-white shadow-sm"
+                : "text-slate-500 hover:bg-slate-50 hover:text-[#17393a]"
+            }`}
+          >
+            Build My Winning Strategy
+          </button>
+        </nav>
+
         {showAdminLogin ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-[28px] border border-white/70 bg-white p-6 shadow-2xl sm:p-8">
@@ -2640,6 +2668,8 @@ export default function Home() {
         </div>
 
         <div className="hidden md:contents">
+        {activePageTab === "position" ? (
+        <>
         <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Who Are We Coaching?</p>
@@ -2950,8 +2980,22 @@ export default function Home() {
           </div>
         </section>
 
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivePageTab("strategy")}
+            className="rounded-2xl bg-[#17393a] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#214a4b]"
+          >
+            Continue to Build My Winning Strategy
+          </button>
+        </div>
+        </>
+        ) : null}
 
 
+
+        {activePageTab === "strategy" ? (
+        <>
         <section className="w-full">
           <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -3335,6 +3379,8 @@ export default function Home() {
             ))}
           </div>
         </details>
+        </>
+        ) : null}
         </div>
       </div>
       </div>
