@@ -321,6 +321,9 @@ export default function Home() {
   const [strategyMode, setStrategyMode] = useState<"recommended" | "coach">("recommended");
   const [strategyName, setStrategyName] = useState("Coach's Custom Strategy");
   const [coachNotes, setCoachNotes] = useState("");
+  const [visibleStrategyFields, setVisibleStrategyFields] = useState<
+    Array<keyof Strategy>
+  >([]);
   const [showTripSetup, setShowTripSetup] = useState(false);
 
   const [adminUnlocked, setAdminUnlocked] = useState(false);
@@ -381,6 +384,14 @@ export default function Home() {
     qualifies: 0,
     playUps: 0,
   });
+
+  function toggleStrategyField(field: keyof Strategy) {
+    setVisibleStrategyFields((current) =>
+      current.includes(field)
+        ? current.filter((item) => item !== field)
+        : [...current, field],
+    );
+  }
 
   function cloneOriginalRules(
     rules: Record<OriginalCompetitionCategory, CompetitionCategoryRule>,
@@ -2715,24 +2726,39 @@ export default function Home() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Where Am I?</p>
                 <h2 className="mt-2 text-2xl font-semibold text-[#17393a]">Current Winning Position</h2>
               </div>
-              <Status ok={currentBpp >= winningLine} okLabel="Above Current Line" badLabel="Outside Winning Position" />
+              {winningLine > 0 ? (
+                <Status ok={currentBpp >= winningLine} okLabel="Above Current Line" badLabel="Outside Winning Position" />
+              ) : (
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+                  Scoreboard Not Entered
+                </span>
+              )}
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Current BPP", whole.format(currentBpp)],
-                ["Current Rank", `#${whole.format(rank)}`],
-                ["Winning Line", precise.format(winningLine)],
-                ["Gap to Line", whole.format(gapToLine)],
-              ].map(([label, value], index) => (
+            {winningLine > 0 ? (
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  ["Current BPP", whole.format(currentBpp)],
+                  ["Current Rank", rank > 0 ? `#${whole.format(rank)}` : "Not entered"],
+                  ["Winning Line", precise.format(winningLine)],
+                  ["Gap to Line", whole.format(gapToLine)],
+                ].map(([label, value], index) => (
                 <div key={label} className={`rounded-2xl p-4 ${index === 3 ? "bg-[#fff8e8]" : "bg-slate-50"}`}>
                   <p className="text-xs font-medium text-slate-500">{label}</p>
                   <p className="mt-2 text-2xl font-bold text-[#17393a]">{value}</p>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6">
+                <p className="font-bold text-[#17393a]">Winning position not entered yet</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Enter the latest scoreboard numbers below to calculate the current position.
+                </p>
+              </div>
+            )}
 
-            <div className="mt-7">
+            {winningLine > 0 ? <div className="mt-7">
               <div className="mb-2 flex justify-between text-xs font-semibold text-slate-500">
                 <span>Progress to current winning line</span>
                 <span>{Math.min(100, (currentBpp / winningLine) * 100).toFixed(1)}%</span>
@@ -2743,7 +2769,7 @@ export default function Home() {
                   style={{ width: `${Math.min(100, (currentBpp / winningLine) * 100)}%` }}
                 />
               </div>
-            </div>
+            </div> : null}
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               <Field label="Current BPP"
@@ -2759,19 +2785,23 @@ export default function Home() {
           </div>
 
           <div className="rounded-[28px] bg-[#17393a] p-6 text-white shadow-sm sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e2c88e]">Qualification Health</p>
-            <h2 className="mt-2 text-2xl font-semibold">Are you on track for your level?</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#e2c88e]">Where Am I Falling Short?</p>
+            <h2 className="mt-2 text-2xl font-semibold">What You Still Need</h2>
 
             <div className="mt-7 space-y-4">
               <div className="rounded-2xl bg-white/10 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold">{levelRule.label} Qualify Target</p>
+                    <p className="text-sm font-semibold">Qualify This Month at {levelRule.label}</p>
                     <p className="mt-1 text-xs text-white/60">
                       {levelRule.qualifyRecruits} recruits × ${whole.format(levelRule.qualifyPremium)} premium
                     </p>
                   </div>
                   <Status ok={qualifyRecruitNeed === 0 && qualifyPremiumNeed === 0} okLabel="Target Met" badLabel="Still Needed" />
+                </div>
+                <div className="mt-3 flex items-center justify-between rounded-xl bg-[#e2c88e]/15 px-3 py-2">
+                  <span className="text-xs font-semibold text-white/75">BPP added when completed</span>
+                  <span className="text-sm font-bold text-[#f3d99f]">+{whole.format(bppRules.qualify)} BPP</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-white/10 p-3">
@@ -3131,20 +3161,99 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid gap-x-5 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
-                  <Field label="Monthly Play Ups" value={strategy.playUps} onChange={(v) => update("playUps", v)} hint={`${whole.format(bppRules.playUp)} BPP each`} />
-                  <Field label="Life Licenses" value={strategy.lifeLicenses} onChange={(v) => update("lifeLicenses", v)} hint={`${whole.format(bppRules.lifeLicense)} BPP each`} />
-                  <Field label="Securities Licenses / Exams" value={strategy.securitiesLicenses} onChange={(v) => update("securitiesLicenses", v)} hint={`${whole.format(bppRules.securitiesLicense)} BPP each`} />
-                  <Field label="Mortgage Licenses" value={strategy.mortgageLicenses} onChange={(v) => update("mortgageLicenses", v)} hint={`${whole.format(bppRules.mortgageLicense)} BPP each`} />
-                  <Field label="Recruits" value={strategy.recruits} onChange={(v) => update("recruits", v)} hint={`${whole.format(bppRules.recruit)} BPP each`} />
-                  <Field label="Life Premium" value={strategy.premium} onChange={(v) => update("premium", v)} hint="Dollar-for-dollar BPP; official per-sale caps still apply." />
-                  <Field label="Initial Securities Trades" value={strategy.initialTrades} onChange={(v) => update("initialTrades", v)} hint={`${whole.format(bppRules.initialTrade)} BPP each`} />
-                  <Field label="Securities Production" value={strategy.securitiesProduction} onChange={(v) => update("securitiesProduction", v)} hint={`${precise.format(bppRules.securitiesProductionPercent)}% counts toward BPP`} />
-                  <Field label="Mortgage Production" value={strategy.mortgageProduction} onChange={(v) => update("mortgageProduction", v)} hint={`${precise.format(bppRules.mortgageProductionPercent)}% counts toward BPP`} />
-                  <Field label="Monthly Qualifies" value={strategy.qualifies} onChange={(v) => update("qualifies", v)} hint={`${whole.format(bppRules.qualify)} BPP each`} />
+                <div className="mt-6">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    Add activity to the strategy
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[
+                      ["qualifies", "Qualify at Level"],
+                      ["playUps", "Play Up"],
+                      ["lifeLicenses", "Life License"],
+                      ["securitiesLicenses", "Securities License / Exam"],
+                      ["mortgageLicenses", "Mortgage License"],
+                      ["recruits", "Recruit"],
+                      ["premium", "Life Premium"],
+                      ["initialTrades", "Initial Trade"],
+                      ["securitiesProduction", "Securities Production"],
+                      ["mortgageProduction", "Mortgage Production"],
+                    ].map(([field, label]) => {
+                      const key = field as keyof Strategy;
+                      const active = visibleStrategyFields.includes(key);
+
+                      return (
+                        <button
+                          key={field}
+                          type="button"
+                          onClick={() => toggleStrategyField(key)}
+                          className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                            active
+                              ? "border-[#17393a] bg-[#17393a] text-white"
+                              : "border-slate-200 bg-white text-[#17393a] hover:border-[#1a7f86]"
+                          }`}
+                        >
+                          {active ? "Remove " : "Add "}{label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {visibleStrategyFields.length > 0 ? (
+                  <div className="mt-6 grid gap-x-5 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {visibleStrategyFields.includes("qualifies") ? <Field label="Qualify at Level" value={strategy.qualifies} onChange={(v) => update("qualifies", v)} hint={`${whole.format(bppRules.qualify)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("playUps") ? <Field label="Monthly Play Ups" value={strategy.playUps} onChange={(v) => update("playUps", v)} hint={`${whole.format(bppRules.playUp)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("lifeLicenses") ? <Field label="Life Licenses" value={strategy.lifeLicenses} onChange={(v) => update("lifeLicenses", v)} hint={`${whole.format(bppRules.lifeLicense)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("securitiesLicenses") ? <Field label="Securities Licenses / Exams" value={strategy.securitiesLicenses} onChange={(v) => update("securitiesLicenses", v)} hint={`${whole.format(bppRules.securitiesLicense)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("mortgageLicenses") ? <Field label="Mortgage Licenses" value={strategy.mortgageLicenses} onChange={(v) => update("mortgageLicenses", v)} hint={`${whole.format(bppRules.mortgageLicense)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("recruits") ? <Field label="Recruits" value={strategy.recruits} onChange={(v) => update("recruits", v)} hint={`${whole.format(bppRules.recruit)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("premium") ? <Field label="Life Premium" value={strategy.premium} onChange={(v) => update("premium", v)} hint="Dollar-for-dollar BPP; official per-sale caps still apply." /> : null}
+                    {visibleStrategyFields.includes("initialTrades") ? <Field label="Initial Securities Trades" value={strategy.initialTrades} onChange={(v) => update("initialTrades", v)} hint={`${whole.format(bppRules.initialTrade)} BPP each`} /> : null}
+                    {visibleStrategyFields.includes("securitiesProduction") ? <Field label="Securities Production" value={strategy.securitiesProduction} onChange={(v) => update("securitiesProduction", v)} hint={`${precise.format(bppRules.securitiesProductionPercent)}% counts toward BPP`} /> : null}
+                    {visibleStrategyFields.includes("mortgageProduction") ? <Field label="Mortgage Production" value={strategy.mortgageProduction} onChange={(v) => update("mortgageProduction", v)} hint={`${precise.format(bppRules.mortgageProductionPercent)}% counts toward BPP`} /> : null}
+                  </div>
+                ) : (
+                  <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-center">
+                    <p className="font-bold text-[#17393a]">No activity added yet</p>
+                    <p className="mt-1 text-sm text-slate-500">Choose an activity above to begin building the coaching plan.</p>
+                  </div>
+                )}
+
+                <div className="mt-8 rounded-[24px] bg-[#17393a] p-5 text-white">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#e2c88e]">Your Coaching Plan</p>
+                      <h3 className="mt-1 text-xl font-bold">{strategyName || "Coach's Custom Strategy"}</h3>
+                    </div>
+                    <Status
+                      ok={winningLine > 0 && projectedBpp >= coachingTarget}
+                      okLabel="On Target"
+                      badLabel={winningLine > 0 ? "More Activity Needed" : "Enter Winning Line"}
+                    />
+                  </div>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-4">
+                    {[
+                      ["Current Gap", winningLine > 0 ? `${whole.format(gapToLine)} BPP` : "Not calculated"],
+                      ["Safety Cushion", `+${whole.format(safetyMargin)} BPP`],
+                      ["Target to Close", winningLine > 0 ? `${whole.format(gapToTarget)} BPP` : "Not calculated"],
+                      ["Strategy Adds", `+${whole.format(strategyBpp)} BPP`],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-2xl bg-white/10 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">{label}</p>
+                        <p className="mt-1 font-bold">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-white/85">
+                    {winningLine <= 0
+                      ? "Enter the current winning line to measure this plan."
+                      : projectedBpp >= coachingTarget
+                        ? `Projected position: ${whole.format(projectedBpp - winningLine)} BPP above today's winning line.`
+                        : `Add ${whole.format(projectedTargetGap)} more BPP to reach the recommended safety target.`}
+                  </p>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <div className="rounded-2xl bg-slate-50 p-5">
                     <p className="text-xs font-semibold text-slate-500">Projected BPP</p>
                     <p className="mt-2 text-2xl font-bold text-[#17393a]">{whole.format(projectedBpp)}</p>
@@ -3182,16 +3291,16 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">BPP Rules</p>
-            <h2 className="mt-2 text-2xl font-semibold text-[#17393a]">Regular Point Rules</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-              Reference values used by the strategy calculator. Point-rule changes are managed in Trip Setup / Admin.
-            </p>
-          </div>
+        <details className="rounded-[28px] border border-slate-200/80 bg-white shadow-sm">
+          <summary className="cursor-pointer list-none p-6 sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b18745]">Reference</p>
+            <div className="mt-2 flex items-center justify-between gap-4">
+              <h2 className="text-xl font-semibold text-[#17393a]">View BPP Rules &amp; Calculations</h2>
+              <span className="text-sm font-bold text-slate-400">Show</span>
+            </div>
+          </summary>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 border-t border-slate-200 p-6 sm:grid-cols-2 sm:p-8 lg:grid-cols-5">
             {[
               ["Recruit", `${whole.format(bppRules.recruit)} BPP`],
               ["Life License", `${whole.format(bppRules.lifeLicense)} BPP`],
@@ -3205,7 +3314,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </section>
+        </details>
         </div>
       </div>
       </div>
