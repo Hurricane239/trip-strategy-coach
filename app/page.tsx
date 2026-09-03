@@ -1037,6 +1037,17 @@ export default function Home() {
       ? originalCategoryRules.us_future_regional_leader
       : extraCategoryRules.us_future_regional_leader);
 
+  const winningRank = selectedCategory.winningSlots;
+  const rankGap = rank > 0 && winningRank > 0 ? rank - winningRank : 0;
+  const rankPositionText =
+    rank <= 0 || winningRank <= 0
+      ? "Rank not entered"
+      : rankGap > 0
+        ? `${whole.format(rankGap)} spots outside winning position`
+        : rankGap < 0
+          ? `${whole.format(Math.abs(rankGap))} spots inside winning position`
+          : "Right on the winning position";
+
   const isOriginalLifeLicensedCategory =
     competitionTrack === "original" &&
     competitionCategory === "us_life_licensed_after_june_5";
@@ -1601,7 +1612,7 @@ export default function Home() {
     const statW = (contentWidth - 20 - statGap * 3) / 4;
     const statItems = [
       ["Current BPP", whole.format(currentBpp)],
-      ["Current Rank", `#${whole.format(rank)}`],
+      ["Current Rank", rank > 0 ? `#${whole.format(rank)} / #${whole.format(winningRank)}` : "Not entered"],
       ["Winning Line", whole.format(winningLine)],
       [
         "Position",
@@ -2802,20 +2813,31 @@ export default function Home() {
               Current Winning Position
             </summary>
             <div className="grid grid-cols-2 border-t border-slate-200 text-center">
-              {[
-                ["Current BPP", whole.format(currentBpp), "text-[#1f6d47]"],
-                ["Current Rank", `#${whole.format(rank)}`, "text-[#17393a]"],
-                ["Winning Line", whole.format(winningLine), "text-[#17393a]"],
-                ["Your Gap", whole.format(gapToLine), "text-[#b18745]"],
-              ].map(([label, value, color], index) => (
-                <div
-                  key={label}
-                  className={`p-3 ${index % 2 === 0 ? "border-r border-slate-200" : ""} ${index < 2 ? "border-b border-slate-200" : ""}`}
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">{label}</p>
-                  <p className={`mt-1 text-base font-bold ${color}`}>{value}</p>
-                </div>
-              ))}
+              <div className="border-b border-r border-slate-200 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">Current BPP</p>
+                <p className="mt-1 text-base font-bold text-[#1f6d47]">{whole.format(currentBpp)}</p>
+              </div>
+              <div className="border-b border-slate-200 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">Current Rank</p>
+                <p className="mt-1 whitespace-nowrap text-sm font-bold text-[#17393a]">
+                  {rank > 0
+                    ? `#${whole.format(rank)} / #${whole.format(winningRank)}`
+                    : "Not entered"}
+                </p>
+                {rank > 0 && winningRank > 0 ? (
+                  <p className={`mt-1 text-[9px] font-semibold leading-3 ${rankGap > 0 ? "text-[#b18745]" : "text-emerald-700"}`}>
+                    {rankPositionText}
+                  </p>
+                ) : null}
+              </div>
+              <div className="border-r border-slate-200 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">Winning Line</p>
+                <p className="mt-1 text-base font-bold text-[#17393a]">{whole.format(winningLine)}</p>
+              </div>
+              <div className="p-3">
+                <p className="text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">Your Gap</p>
+                <p className="mt-1 text-base font-bold text-[#b18745]">{whole.format(gapToLine)}</p>
+              </div>
             </div>
             <details className="border-t border-slate-200">
               <summary className="cursor-pointer list-none px-4 py-3 text-center text-xs font-bold text-slate-500">
@@ -2994,18 +3016,47 @@ export default function Home() {
             </div>
 
             {winningLine > 0 ? (
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                  ["Current BPP", whole.format(currentBpp)],
-                  ["Current Rank", rank > 0 ? `#${whole.format(rank)}` : "Not entered"],
-                  ["Winning Line", precise.format(winningLine)],
-                  ["Gap to Line", whole.format(gapToLine)],
-                ].map(([label, value], index) => (
-                <div key={label} className={`rounded-2xl p-4 ${index === 3 ? "bg-[#fff8e8]" : "bg-slate-50"}`}>
-                  <p className="text-xs font-medium text-slate-500">{label}</p>
-                  <p className="mt-2 text-2xl font-bold text-[#17393a]">{value}</p>
+              <div className="mt-6 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="min-w-0 rounded-xl bg-slate-50 p-3">
+                  <p className="text-[11px] font-medium text-slate-500">Current BPP</p>
+                  <p className="mt-1 whitespace-nowrap text-[1.35rem] font-bold tracking-[-0.03em] text-[#17393a]">
+                    {whole.format(currentBpp)}
+                  </p>
                 </div>
-                ))}
+
+                <div className="min-w-0 rounded-xl bg-slate-50 p-3">
+                  <p className="text-[11px] font-medium text-slate-500">Current Rank</p>
+                  <p className="mt-1 whitespace-nowrap text-[1.2rem] font-bold tracking-[-0.03em] text-[#17393a]">
+                    {rank > 0
+                      ? `#${whole.format(rank)} / #${whole.format(winningRank)}`
+                      : "Not entered"}
+                  </p>
+                  {rank > 0 && winningRank > 0 ? (
+                    <p
+                      className={`mt-1 text-[10px] font-semibold leading-4 ${
+                        rankGap > 0
+                          ? "text-[#b18745]"
+                          : "text-emerald-700"
+                      }`}
+                    >
+                      {rankPositionText}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="min-w-0 rounded-xl bg-slate-50 p-3">
+                  <p className="text-[11px] font-medium text-slate-500">Winning Line</p>
+                  <p className="mt-1 whitespace-nowrap text-[1.35rem] font-bold tracking-[-0.04em] text-[#17393a]">
+                    {whole.format(winningLine)}
+                  </p>
+                </div>
+
+                <div className="min-w-0 rounded-xl bg-[#fff8e8] p-3">
+                  <p className="text-[11px] font-medium text-slate-500">Gap to Line</p>
+                  <p className="mt-1 whitespace-nowrap text-[1.35rem] font-bold tracking-[-0.03em] text-[#17393a]">
+                    {whole.format(gapToLine)}
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6">
