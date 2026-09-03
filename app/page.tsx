@@ -1047,6 +1047,10 @@ export default function Home() {
         : rankGap < 0
           ? `${whole.format(Math.abs(rankGap))} spots inside winning position`
           : "Right on the winning position";
+  const isInsideWinningPosition =
+    rank > 0 && winningRank > 0
+      ? rank <= winningRank
+      : winningLine > 0 && currentBpp >= winningLine;
 
   const isOriginalLifeLicensedCategory =
     competitionTrack === "original" &&
@@ -3007,7 +3011,11 @@ export default function Home() {
                 <h2 className="mt-2 text-2xl font-semibold text-[#17393a]">Current Winning Position</h2>
               </div>
               {winningLine > 0 ? (
-                <Status ok={currentBpp >= winningLine} okLabel="Above Current Line" badLabel="Outside Winning Position" />
+                <Status
+                  ok={isInsideWinningPosition}
+                  okLabel="Inside Winning Position"
+                  badLabel="Outside Winning Position"
+                />
               ) : (
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
                   Scoreboard Not Entered
@@ -3024,7 +3032,15 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="min-w-0 rounded-xl bg-slate-50 p-3">
+                <div
+                  className={`min-w-0 rounded-xl p-3 ${
+                    rank > 0 && winningRank > 0
+                      ? isInsideWinningPosition
+                        ? "bg-emerald-50"
+                        : "bg-[#fff8e8]"
+                      : "bg-slate-50"
+                  }`}
+                >
                   <p className="text-[11px] font-medium text-slate-500">Current Rank</p>
                   <p className="mt-1 whitespace-nowrap text-[1.2rem] font-bold tracking-[-0.03em] text-[#17393a]">
                     {rank > 0
